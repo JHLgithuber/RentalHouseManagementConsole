@@ -9,7 +9,14 @@
         <local:ViewLocator/>
     </Application.DataTemplates>
 
-    <Application.Styles>
-        <FluentTheme />
-    </Application.Styles>
+    <!-- <Application.Styles> -->
+    <!--     <FluentTheme /> -->
+    <!--     <Style Selector="TextBlock, TextBox, Button, ContentControl, Window"> -->
+    <!--         ~1~ CHANGED: 프로젝트 내 리소스 폰트 사용 @1@ -->
+    <!--         <Setter Property="FontFamily" -->
+    <!--                 Value="avares://RentalHousingManagementConsole/Resources/Fonts/NotoSansKR-Regular.ttf"/> -->
+    <!-- -->
+    <!--     </Style> -->
+    <!-- -->
+    <!-- </Application.Styles> -->
 </Application>

@@ -4,9 +4,10 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:RentalHousingManagementConsole.ViewModels"
              xmlns:converters="clr-namespace:Avalonia.Markup.Xaml.Converters;assembly=Avalonia.Markup.Xaml"
+             xmlns:controls="clr-namespace:RentalHousingManagementConsole.Controls"
              mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
              x:Class="RentalHousingManagementConsole.Views.MainView"
-             x:DataType="vm:MainViewModel"><!-- CHANGED: 컨버터 네임스페이스 -->
+             x:DataType="vm:MainViewModel"><!-- CHANGED: 컨버터 네임스페이스 + AutoUniformGrid 네임스페이스 추가 -->
 
   <Design.DataContext>
     <vm:MainViewModel />
@@ -19,58 +20,90 @@
     </Grid.RowDefinitions>
 
     <!-- Top App Bar -->
-    <Border Background="{DynamicResource SystemAccentColor}" Padding="12,8" Grid.Row="0">
+    <!-- 테마 색상 설정: Background="{DynamicResource SystemAccentColor}" - 상단바의 배경색 (테마 색상) -->
+    <Border Background="{DynamicResource SystemAccentColor}" Padding="12,8" Grid.Row="0"
+            IsVisible="{Binding !IsFullScreen}">
       <DockPanel>
         <!-- 햄버거 -->
         <ToggleButton x:Name="HamburgerButton"
                       IsChecked="{Binding IsPaneOpen, Mode=TwoWay}"
                       Width="40" Height="36"
                       VerticalAlignment="Center"
-                      ToolTip.Tip="메뉴">
+                      ToolTip.Tip="메뉴"
+                      DockPanel.Dock="Left">
           <Path Data="M3,6 H21 M3,12 H21 M3,18 H21" Stroke="White" StrokeThickness="2" StrokeLineCap="Round"/>
         </ToggleButton>
+        
         <TextBlock Text="임대주택 대시보드" FontSize="18" Foreground="White"
-                   Margin="12,0,0,0" VerticalAlignment="Center"/>
+                   Margin="12,0,0,0" VerticalAlignment="Center"
+                   DockPanel.Dock="Left"/>
+        
+        <!-- 전체화면 버튼 (우상단) -->
+        <Button Command="{Binding ToggleFullScreenCommand}"
+                Width="40" Height="36"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Right"
+                DockPanel.Dock="Right"
+                ToolTip.Tip="전체화면">
+          <Path Data="M5,5 L5,10 M5,5 L10,5 M19,5 L19,10 M19,5 L14,5 M5,19 L5,14 M5,19 L10,19 M19,19 L19,14 M19,19 L14,19" 
+                Stroke="White" StrokeThickness="2" StrokeLineCap="Round"/>
+        </Button>
       </DockPanel>
     </Border>
 
     <!-- 본문 -->
     <Grid Grid.Row="1">
-      <!-- 타일 영역 -->
+      <!-- 타일 영역 (그룹별로 표시) -->
       <ScrollViewer>
-        <ItemsControl ItemsSource="{Binding Units}">
-          <ItemsControl.ItemsPanel>
-            <ItemsPanelTemplate>
-              <WrapPanel ItemWidth="260" ItemHeight="140" MinWidth="200"/>
-            </ItemsPanelTemplate>
-          </ItemsControl.ItemsPanel>
+        <ItemsControl ItemsSource="{Binding Groups}">
           <ItemsControl.ItemTemplate>
-            <DataTemplate x:DataType="vm:UnitTileViewModel">
-              <Border CornerRadius="8" Margin="8" Padding="12" Background="{Binding BackgroundBrush}"  BoxShadow="0 4 16 0 #33000000"> <!-- CHANGED: BoxShadow -->
-                <Grid>
-                  <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                  </Grid.RowDefinitions>
+            <DataTemplate x:DataType="vm:UnitGroupViewModel">
+              <StackPanel Margin="0,8">
+                <!-- 그룹 이름 (예: "101동") -->
+                <TextBlock Text="{Binding GroupName}" FontSize="20" FontWeight="Bold" Margin="16,8,0,8"/>
+                
+                <!-- 그룹 내 타일들 (AutoUniformGrid로 가로 공간을 채움) -->
+                <ItemsControl ItemsSource="{Binding Units}">
+                  <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <!-- AutoUniformGrid: MinItemWidth를 기준으로 열 개수를 자동 계산하여 타일이 가로 공간을 채우도록 함 -->
+                      <controls:AutoUniformGrid MinItemWidth="240" />
+                    </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:UnitTileViewModel">
+                      <Border CornerRadius="8" Margin="8" Padding="12" Background="{Binding BackgroundBrush}" BoxShadow="0 4 16 0 #33000000">
+                        <Grid>
+                          <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                          </Grid.RowDefinitions>
 
-                  <!-- 세대 이름 -->
-                  <TextBlock Text="{Binding UnitName}" FontWeight="Bold" FontSize="16"
-                             Foreground="{Binding ForegroundBrush}"/>
+                          <!-- 세대 이름 -->
+                          <TextBlock Text="{Binding UnitName}" FontWeight="Bold" FontSize="16"
+                                     Foreground="{Binding ForegroundBrush}"/>
 
-                  <!-- 메시지 -->
-                  <TextBlock Grid.Row="1" TextWrapping="Wrap" Margin="0,6,0,0"
-                             Text="{Binding Message}"
-                             Foreground="{Binding ForegroundBrush}"/>
+                          <!-- 메시지 -->
+                          <TextBlock Grid.Row="1" TextWrapping="Wrap" Margin="0,6,0,0"
+                                     Text="{Binding Message}"
+                                     Foreground="{Binding ForegroundBrush}"/>
 
-                  <!-- 지표 뱃지 -->
-                  <Border Grid.Row="2" HorizontalAlignment="Right" Padding="8,2" CornerRadius="12"
-                          Background="#40000000"
-                          IsVisible="{Binding MetricText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"> <!-- CHANGED: MetricText + 컨버터 -->
-                    <TextBlock Text="{Binding MetricText}" Foreground="White"/>
-                  </Border>
-                </Grid>
-              </Border>
+                          <!-- 지표 뱃지 -->
+                          <Border Grid.Row="2" HorizontalAlignment="Right" Padding="8,2" CornerRadius="12"
+                                  Background="#40000000"
+                                  IsVisible="{Binding MetricText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                            <TextBlock Text="{Binding MetricText}" Foreground="White"/>
+                          </Border>
+                        </Grid>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                
+                <!-- 그룹간 구분선 -->
+                <Border Height="1" Background="#30000000" Margin="16,16,16,8"/>
+              </StackPanel>
             </DataTemplate>
           </ItemsControl.ItemTemplate>
         </ItemsControl>

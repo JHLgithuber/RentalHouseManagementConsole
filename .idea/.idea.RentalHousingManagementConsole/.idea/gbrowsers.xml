@@ -6,34 +6,6 @@
   "isProtocolHidden": false,
   "history": [
     {
-      "name": "GBrowser Plugin for JetBrains IDEs | JetBrains Marketplace",
-      "url": "https://plugins.jetbrains.com/search?excludeTags=internal&products=androidstudio&products=aqua&products=clion&products=dataspell&products=dbe&products=fleet&products=go&products=idea&products=idea_ce&products=mps&products=phpstorm&products=pycharm&products=rider&products=ruby&products=rust&products=webstorm&products=writerside&tags=Theme"
-    },
-    {
-      "name": "GBrowser Plugin for JetBrains IDEs | JetBrains Marketplace",
-      "url": "https://plugins.jetbrains.com/plugin-ideas"
-    },
-    {
-      "name": "Google",
-      "url": "https://www.google.com/"
-    },
-    {
-      "name": "Google",
-      "url": "https://www.google.com/?zx=1759940782007&no_sw_cr=1"
-    },
-    {
-      "name": "Google Search",
-      "url": "https://www.google.com/search?q=avalonia&sca_esv=0e371b12cf7989f4&source=hp&ei=rZDmaP3TGKbc2roP1fjn8QQ&iflsig=AOw8s4IAAAAAaOaevR7kRH1UUSeDInMBrud6Sl6hM_w7&ved=0ahUKEwi93ueogpWQAxUmrlYBHVX8OU4Q4dUDCA8&uact=5&oq=avalonia&gs_lp=Egdnd3Mtd2l6IghhdmFsb25pYTIFEAAYgAQyBRAAGIAEMgUQABiABDIFEAAYgAQyBRAAGIAEMgUQABiABDIFEAAYgAQyBRAAGIAEMgUQABiABDIFEAAYgARIrS1QvghYpyxwCHgAkAEAmAF3oAGhDKoBBDUuMTC4AQPIAQD4AQGYAhWgAs4MqAIAwgILEAAYgAQYsQMYgwHCAgQQABgDwgINEAAYgAQYsQMYgwEYCsICCBAAGIAEGLEDwgIHEAAYgAQYCsICDhAuGIAEGLEDGNEDGMcBwgILEC4YgAQYsQMYgwHCAhEQLhiABBixAxjRAxiDARjHAcICCxAuGIAEGNEDGMcBmAMA8QVbkaWVZDiXeZIHBDguMTOgB6lbsgcEMi4xM7gHwwzCBwYwLjIwLjHIByA&sclient=gws-wiz"
-    },
-    {
-      "name": "avalonia - Google 검색",
-      "url": "https://www.google.com/search?q=avalonia&sca_esv=0e371b12cf7989f4&source=hp&ei=rZDmaP3TGKbc2roP1fjn8QQ&iflsig=AOw8s4IAAAAAaOaevR7kRH1UUSeDInMBrud6Sl6hM_w7&ved=0ahUKEwi93ueogpWQAxUmrlYBHVX8OU4Q4dUDCA8&uact=5&oq=avalonia&gs_lp=Egdnd3Mtd2l6IghhdmFsb25pYTIFEAAYgAQyBRAAGIAEMgUQABiABDIFEAAYgAQyBRAAGIAEMgUQABiABDIFEAAYgAQyBRAAGIAEMgUQABiABDIFEAAYgARIrS1QvghYpyxwCHgAkAEAmAF3oAGhDKoBBDUuMTC4AQPIAQD4AQGYAhWgAs4MqAIAwgILEAAYgAQYsQMYgwHCAgQQABgDwgINEAAYgAQYsQMYgwEYCsICCBAAGIAEGLEDwgIHEAAYgAQYCsICDhAuGIAEGLEDGNEDGMcBwgILEC4YgAQYsQMYgwHCAhEQLhiABBixAxjRAxiDARjHAcICCxAuGIAEGNEDGMcBmAMA8QVbkaWVZDiXeZIHBDguMTOgB6lbsgcEMi4xM7gHwwzCBwYwLjIwLjHIByA&sclient=gws-wiz&sei=1JDmaMGOJbDk2roPgdGXoAg"
-    },
-    {
-      "name": "Avalonia UI – Open-Source .NET XAML Framework | WPF & MAUI Alternative",
-      "url": "https://avaloniaui.net/"
-    },
-    {
       "name": "Avalonia Docs",
       "url": "https://docs.avaloniaui.net/"
     },
@@ -84,12 +56,44 @@
     {
       "name": "",
       "url": "google.com"
+    },
+    {
+      "name": "rider avalonia android emulator - Google 검색",
+      "url": "https://www.google.com/search?q=rider+avalonia+android+emulator&sca_esv=fe1d53302ad225f0&source=hp&ei=R6_oaNqGN__m2roP3ejX2AM&iflsig=AOw8s4IAAAAAaOi9V6wA61FcsYWGtx-LNn84QsW0Yzd9&oq=rider+avalonia+android+amul&gs_lp=Egdnd3Mtd2l6IhtyaWRlciBhdmFsb25pYSBhbmRyb2lkIGFtdWwqAggDMgUQIRigATIFECEYoAEyBRAhGKABMgQQIRgVSM_MAVC-IVjntwFwFHgAkAEAmAHWAaAB0RiqAQYwLjI1LjG4AQPIAQD4AQGYAiigApsZqAIAwgIFEAAYgATCAgUQLhiABMICCxAuGIAEGNEDGMcBwgIJEAAYgAQYChgqwgIHEAAYgAQYCsICDRAuGIAEGNEDGMcBGArCAgsQLhiABBjHARivAcICBBAAGB7CAggQABiABBiiBMICBRAAGO8FmAMA8QXZpjghddt1zpIHBzE0LjI1LjGgB8WrAbIHBjAuMjUuMbgHgBnCBwY3LjMyLjHIBzU&sclient=gws-wiz"
+    },
+    {
+      "name": "How To Set Up an Android Dev Environment | Avalonia Docs",
+      "url": "https://docs.avaloniaui.net/docs/guides/platforms/android/setting-up-your-developer-environment-for-android"
+    },
+    {
+      "name": "Running on Raspberry Pi | Avalonia Docs",
+      "url": "https://docs.avaloniaui.net/docs/guides/platforms/rpi/running-your-app-on-a-raspberry-pi"
+    },
+    {
+      "name": "Web Assembly | Avalonia Docs",
+      "url": "https://docs.avaloniaui.net/docs/guides/platforms/how-to-use-web-assembly"
+    },
+    {
+      "name": "Deep Dives | Avalonia Docs",
+      "url": "https://docs.avaloniaui.net/docs/concepts/"
+    },
+    {
+      "name": "Google",
+      "url": "https://www.google.com/"
+    },
+    {
+      "name": "Segoe UI, 'Malgun Gothic', 'Noto Sans CJK KR', 'Droid Sans Fallback', sans-serif - Google 검색",
+      "url": "https://www.google.com/search?q=Segoe+UI%2C+%27Malgun+Gothic%27%2C+%27Noto+Sans+CJK+KR%27%2C+%27Droid+Sans+Fallback%27%2C+sans-serif&sca_esv=c8099ca82f4112b0&source=hp&ei=g7ToaK_aMt_R2roPxdmC8Qs&iflsig=AOw8s4IAAAAAaOjCk2TLjTvhT9c3-4JbfXSBG9POhJ8h&ved=0ahUKEwjvp8LjjJmQAxXfqFYBHcWsIL4Q4dUDCA0&uact=5&oq=Segoe+UI%2C+%27Malgun+Gothic%27%2C+%27Noto+Sans+CJK+KR%27%2C+%27Droid+Sans+Fallback%27%2C+sans-serif&gs_lp=Egdnd3Mtd2l6IlBTZWdvZSBVSSwgJ01hbGd1biBHb3RoaWMnLCAnTm90byBTYW5zIENKSyBLUicsICdEcm9pZCBTYW5zIEZhbGxiYWNrJywgc2Fucy1zZXJpZki4BVD7AVj7AXAAeACQAQCYAZ8BoAGfAaoBAzAuMbgBA8gBAPgBAvgBAZgCAKACAKgCAJgDoQHxBWKgTrbshFQpkgcAoAdIsgcAuAcAwgcAyAcA&sclient=gws-wiz"
     }
   ],
   "bookmarks": [
     {
       "url": "https://docs.avaloniaui.net/",
       "name": "Avalonia Docs"
+    },
+    {
+      "url": "https://www.google.com/",
+      "name": "Google"
     }
   ]
 }]]></component>
