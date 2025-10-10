@@ -1,20 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="GBrowserService"><![CDATA[{
+  "defaultHomePage": "google.com",
+  "hideIdLabel": false,
   "isProtocolHidden": false,
   "history": [
-    {
-      "name": "GBrowser - IntelliJ IDEs Plugin | Marketplace",
-      "url": "https://plugins.jetbrains.com/plugin/14458-gbrowser"
-    },
-    {
-      "name": "GBrowser Plugin for JetBrains IDEs | JetBrains Marketplace",
-      "url": "https://plugins.jetbrains.com/search?tags=Theme"
-    },
-    {
-      "name": "GBrowser Plugin for JetBrains IDEs | JetBrains Marketplace",
-      "url": "https://plugins.jetbrains.com/search?excludeTags=internal"
-    },
     {
       "name": "GBrowser Plugin for JetBrains IDEs | JetBrains Marketplace",
       "url": "https://plugins.jetbrains.com/search?excludeTags=internal&products=androidstudio&products=aqua&products=clion&products=dataspell&products=dbe&products=fleet&products=go&products=idea&products=idea_ce&products=mps&products=phpstorm&products=pycharm&products=rider&products=ruby&products=rust&products=webstorm&products=writerside&tags=Theme"
@@ -78,6 +68,22 @@
     {
       "name": "Samples | Avalonia Docs",
       "url": "https://docs.avaloniaui.net/docs/tutorials/samples"
+    },
+    {
+      "name": "Junie has been working on this problem for some time. You can either let it continue iterating, or send a new message to refine the task. - Google 검색",
+      "url": "https://www.google.com/search?q=Junie+has+been+working+on+this+problem+for+some+time.+You+can+either+let+it+continue+iterating%2C+or+send+a+new+message+to+refine+the+task.&sca_esv=0e371b12cf7989f4&source=hp&ei=zZLmaMiQEJWH2roPqtikgQs&iflsig=AOw8s4IAAAAAaOag3YN_pR3IB5s5DVffFOy0W8DC7p6J&ved=0ahUKEwiIq5KshJWQAxWVg1YBHSosKbAQ4dUDCA8&uact=5&oq=Junie+has+been+working+on+this+problem+for+some+time.+You+can+either+let+it+continue+iterating%2C+or+send+a+new+message+to+refine+the+task.&gs_lp=Egdnd3Mtd2l6IokBSnVuaWUgaGFzIGJlZW4gd29ya2luZyBvbiB0aGlzIHByb2JsZW0gZm9yIHNvbWUgdGltZS4gWW91IGNhbiBlaXRoZXIgbGV0IGl0IGNvbnRpbnVlIGl0ZXJhdGluZywgb3Igc2VuZCBhIG5ldyBtZXNzYWdlIHRvIHJlZmluZSB0aGUgdGFzay4yGhAAGIAEGLQCGNQDGOUCGLcDGIoFGOoCGIoDMhoQABiABBi0AhjUAxjlAhi3AxiKBRjqAhiKAzIaEAAYgAQYtAIY1AMY5QIYtwMYigUY6gIYigMyGhAAGIAEGLQCGNQDGOUCGLcDGIoFGOoCGIoDMhoQABiABBi0AhjUAxjlAhi3AxiKBRjqAhiKAzIaEAAYgAQYtAIY1AMY5QIYtwMYigUY6gIYigMyGhAAGIAEGLQCGNQDGOUCGLcDGIoFGOoCGIoDMhoQABiABBi0AhjUAxjlAhi3AxiKBRjqAhiKAzIaEAAYgAQYtAIY1AMY5QIYtwMYigUY6gIYigMyGhAAGIAEGLQCGNQDGOUCGLcDGIoFGOoCGIoDSKYIUL0FWL0FcAF4AJABAJgBAKABAKoBALgBA8gBAPgBAvgBAZgCAaACBKgCCpgDBPEFDDWPRsSlVISSBwExoAcAsgcAuAcAwgcDMi0xyAcD&sclient=gws-wiz"
+    },
+    {
+      "name": "\"Continue to iterate\" prompt in vscode : r/GithubCopilot",
+      "url": "https://www.reddit.com/r/GithubCopilot/comments/1khpm8m/continue_to_iterate_prompt_in_vscode/"
+    },
+    {
+      "name": "JetBrains Junie - IntelliJ IDEs Plugin | Marketplace",
+      "url": "https://plugins.jetbrains.com/plugin/26104-jetbrains-junie/reviews"
+    },
+    {
+      "name": "",
+      "url": "google.com"
     }
   ],
   "bookmarks": [

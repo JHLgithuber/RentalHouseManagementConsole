@@ -3,14 +3,115 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:RentalHousingManagementConsole.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:converters="clr-namespace:Avalonia.Markup.Xaml.Converters;assembly=Avalonia.Markup.Xaml"
+             mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
              x:Class="RentalHousingManagementConsole.Views.MainView"
-             x:DataType="vm:MainViewModel">
+             x:DataType="vm:MainViewModel"><!-- CHANGED: 컨버터 네임스페이스 -->
+
   <Design.DataContext>
-    <!-- This only sets the DataContext for the previewer in an IDE,
-         to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
     <vm:MainViewModel />
   </Design.DataContext>
 
-  <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
+
+    <!-- Top App Bar -->
+    <Border Background="{DynamicResource SystemAccentColor}" Padding="12,8" Grid.Row="0">
+      <DockPanel>
+        <!-- 햄버거 -->
+        <ToggleButton x:Name="HamburgerButton"
+                      IsChecked="{Binding IsPaneOpen, Mode=TwoWay}"
+                      Width="40" Height="36"
+                      VerticalAlignment="Center"
+                      ToolTip.Tip="메뉴">
+          <Path Data="M3,6 H21 M3,12 H21 M3,18 H21" Stroke="White" StrokeThickness="2" StrokeLineCap="Round"/>
+        </ToggleButton>
+        <TextBlock Text="임대주택 대시보드" FontSize="18" Foreground="White"
+                   Margin="12,0,0,0" VerticalAlignment="Center"/>
+      </DockPanel>
+    </Border>
+
+    <!-- 본문 -->
+    <Grid Grid.Row="1">
+      <!-- 타일 영역 -->
+      <ScrollViewer>
+        <ItemsControl ItemsSource="{Binding Units}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel ItemWidth="260" ItemHeight="140" MinWidth="200"/>
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:UnitTileViewModel">
+              <Border CornerRadius="8" Margin="8" Padding="12" Background="{Binding BackgroundBrush}"  BoxShadow="0 4 16 0 #33000000"> <!-- CHANGED: BoxShadow -->
+                <Grid>
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                  </Grid.RowDefinitions>
+
+                  <!-- 세대 이름 -->
+                  <TextBlock Text="{Binding UnitName}" FontWeight="Bold" FontSize="16"
+                             Foreground="{Binding ForegroundBrush}"/>
+
+                  <!-- 메시지 -->
+                  <TextBlock Grid.Row="1" TextWrapping="Wrap" Margin="0,6,0,0"
+                             Text="{Binding Message}"
+                             Foreground="{Binding ForegroundBrush}"/>
+
+                  <!-- 지표 뱃지 -->
+                  <Border Grid.Row="2" HorizontalAlignment="Right" Padding="8,2" CornerRadius="12"
+                          Background="#40000000"
+                          IsVisible="{Binding MetricText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"> <!-- CHANGED: MetricText + 컨버터 -->
+                    <TextBlock Text="{Binding MetricText}" Foreground="White"/>
+                  </Border>
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+
+      <!-- 오버레이 클릭 닫기 -->
+      <ToggleButton x:Name="OverlayCloseButton"
+                    IsVisible="{Binding IsPaneOpen}"
+                    IsChecked="{Binding IsPaneOpen, Mode=TwoWay}"
+                    Background="#80000000"
+                    BorderThickness="0"
+                    Content=""
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    Focusable="False">
+        <ToggleButton.Template>
+          <ControlTemplate>
+            <Border Background="{TemplateBinding Background}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    BorderBrush="{TemplateBinding BorderBrush}">
+              <!-- overlay 영역만 렌더링 -->
+            </Border>
+          </ControlTemplate>
+        </ToggleButton.Template>
+      </ToggleButton>
+
+      <!-- 슬라이드 메뉴 -->
+      <Border IsVisible="{Binding IsPaneOpen}"
+              Width="280" Background="{DynamicResource ThemeBackgroundBrush}"
+              HorizontalAlignment="Left" VerticalAlignment="Stretch"
+              BoxShadow="0 8 24 0 #40000000">
+        <DockPanel>
+          <ListBox>
+            <ListBoxItem>대시보드</ListBoxItem>
+            <ListBoxItem>세대 관리</ListBoxItem>
+            <ListBoxItem>임대료/미납</ListBoxItem>
+            <ListBoxItem>통계</ListBoxItem>
+            <ListBoxItem>설정</ListBoxItem>
+          </ListBox>
+        </DockPanel>
+      </Border>
+    </Grid>
+  </Grid>
 </UserControl>
