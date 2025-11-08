@@ -5,18 +5,18 @@
              RequestedThemeVariant="Default">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
-    <Application.DataTemplates>
-        <local:ViewLocator/>
-    </Application.DataTemplates>
+   <Application.DataTemplates>
+       <local:ViewLocator/>
+   </Application.DataTemplates>
 
-    <!-- <Application.Styles> -->
-    <!--     <FluentTheme /> -->
-    <!--     <Style Selector="TextBlock, TextBox, Button, ContentControl, Window"> -->
-    <!--         ~1~ CHANGED: 프로젝트 내 리소스 폰트 사용 @1@ -->
-    <!--         <Setter Property="FontFamily" -->
-    <!--                 Value="avares://RentalHousingManagementConsole/Resources/Fonts/NotoSansKR-Regular.ttf"/> -->
-    <!-- -->
-    <!--     </Style> -->
-    <!-- -->
-    <!-- </Application.Styles> -->
+   <Application.Styles>
+       <FluentTheme />
+       <!-- 전역 폰트 설정: 텍스트를 렌더링하는 대표 요소들에만 지정 -->
+       <Style Selector="TextBlock">
+           <Setter Property="FontFamily" Value="avares://RentalHousingManagementConsole/Resources/Fonts/NotoSansKR-Regular.ttf#Noto Sans KR"/>
+       </Style>
+       <Style Selector="TextBox">
+           <Setter Property="FontFamily" Value="avares://RentalHousingManagementConsole/Resources/Fonts/NotoSansKR-Regular.ttf#Noto Sans KR"/>
+       </Style>
+     </Application.Styles>
 </Application>

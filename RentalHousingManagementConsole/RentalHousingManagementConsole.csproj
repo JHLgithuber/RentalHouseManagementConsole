@@ -9,6 +9,8 @@
     <ItemGroup>
         <!-- Keep only asset resources here; .axaml files are handled by Avalonia targets by default -->
         <AvaloniaResource Include="Assets\**"/>
+        <!-- Include Resources (e.g., Fonts) so they can be referenced via avares:// -->
+        <AvaloniaResource Include="Resources\**"/>
     </ItemGroup>
 
     <ItemGroup>
