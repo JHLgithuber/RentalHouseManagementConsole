@@ -7,6 +7,8 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="RentalHousingManagementConsole.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
-        Title="RentalHousingManagementConsole">
-        <views:MainView />
+        Title="RentalHousingManagementConsole"
+        Width="1200"
+        Height="800">
+  <!-- Content는 코드에서 동적으로 설정됨 (LoginView 또는 MainView) -->
 </Window>

@@ -1,0 +1,115 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:RentalHousingManagementConsole.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="RentalHousingManagementConsole.Views.LoginView"
+             x:DataType="vm:LoginViewModel">
+
+  <Design.DataContext>
+    <vm:LoginViewModel />
+  </Design.DataContext>
+
+  <Grid Background="{DynamicResource SystemAccentColor}">
+    <!-- 로그인 카드 -->
+    <Border Width="400"
+            Background="White"
+            CornerRadius="12"
+            Padding="40"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            BoxShadow="0 8 32 0 #40000000">
+      <StackPanel Spacing="20">
+        <!-- 로고 및 제목 -->
+        <StackPanel Spacing="8" HorizontalAlignment="Center">
+          <TextBlock Text="🏢" FontSize="48" HorizontalAlignment="Center"/>
+          <TextBlock Text="임대주택 관리 시스템" 
+                     FontSize="24" 
+                     FontWeight="Bold" 
+                     HorizontalAlignment="Center"/>
+          <TextBlock Text="로그인하여 계속하세요" 
+                     FontSize="14" 
+                     Opacity="0.7" 
+                     HorizontalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- Windows Hello 버튼 -->
+        <Button Command="{Binding LoginWithWindowsHelloCommand}"
+                IsVisible="{Binding IsWindowsHelloAvailable}"
+                HorizontalAlignment="Stretch"
+                Padding="16"
+                Background="#0078D4"
+                Foreground="White"
+                CornerRadius="6">
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="12">
+            <TextBlock Text="🔐" FontSize="20" VerticalAlignment="Center"/>
+            <TextBlock Text="Windows Hello로 로그인" FontSize="14" VerticalAlignment="Center"/>
+          </StackPanel>
+        </Button>
+
+        <!-- 구분선 -->
+        <Grid IsVisible="{Binding IsWindowsHelloAvailable}">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+          </Grid.ColumnDefinitions>
+          <Border Grid.Column="0" Height="1" Background="#E0E0E0" VerticalAlignment="Center"/>
+          <TextBlock Grid.Column="1" Text="또는" Margin="12,0" Opacity="0.7" FontSize="12"/>
+          <Border Grid.Column="2" Height="1" Background="#E0E0E0" VerticalAlignment="Center"/>
+        </Grid>
+
+        <!-- 사용자명 입력 -->
+        <StackPanel Spacing="8">
+          <TextBlock Text="사용자명" FontWeight="SemiBold"/>
+          <TextBox Text="{Binding Username}" 
+                   Watermark="사용자명 입력"
+                   Padding="12,10"
+                   CornerRadius="6"/>
+        </StackPanel>
+
+        <!-- 비밀번호 입력 -->
+        <StackPanel Spacing="8">
+          <TextBlock Text="비밀번호" FontWeight="SemiBold"/>
+          <TextBox Text="{Binding Password}" 
+                   Watermark="비밀번호 입력"
+                   PasswordChar="●"
+                   Padding="12,10"
+                   CornerRadius="6"/>
+        </StackPanel>
+
+        <!-- 오류 메시지 -->
+        <Border IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                Background="#FFEBEE"
+                Padding="12"
+                CornerRadius="6">
+          <TextBlock Text="{Binding ErrorMessage}" 
+                     Foreground="#C62828"
+                     TextWrapping="Wrap"/>
+        </Border>
+
+        <!-- 로그인 버튼 -->
+        <Button Command="{Binding LoginWithPasswordCommand}"
+                IsEnabled="{Binding !IsAuthenticating}"
+                HorizontalAlignment="Stretch"
+                Padding="16"
+                Background="{DynamicResource SystemAccentColor}"
+                Foreground="White"
+                CornerRadius="6">
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
+            <TextBlock Text="로그인" FontSize="14" FontWeight="SemiBold" IsVisible="{Binding !IsAuthenticating}"/>
+            <TextBlock Text="로그인 중..." FontSize="14" FontWeight="SemiBold" IsVisible="{Binding IsAuthenticating}"/>
+          </StackPanel>
+        </Button>
+
+        <!-- 도움말 텍스트 -->
+        <TextBlock Text="데모: admin / admin으로 로그인하세요" 
+                   FontSize="12" 
+                   Opacity="0.6" 
+                   HorizontalAlignment="Center"
+                   TextAlignment="Center"/>
+      </StackPanel>
+    </Border>
+  </Grid>
+</UserControl>

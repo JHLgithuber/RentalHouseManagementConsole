@@ -20,10 +20,14 @@ public partial class MainWindow : Window
 
     private bool _applyingFullScreen; // VM 동기화 루프 방지
     private MainViewModel? _vm;
+    private LoginViewModel? _loginVm;
 
     public MainWindow()
     {
         InitializeComponent();
+
+        // 로그인 화면으로 시작
+        ShowLoginScreen();
 
         // DataContext은 ViewLocator에 의해 설정될 수 있으므로 변경 이벤트를 구독
         DataContextChanged += OnDataContextChanged;
@@ -131,8 +135,11 @@ public partial class MainWindow : Window
             try
             {
                 var screen = Screens.ScreenFromWindow(this) ?? Screens.Primary;
-                var bounds = screen.Bounds;
-                Position = bounds.Position; // 픽셀 좌표 기준
+                if (screen != null)
+                {
+                    var bounds = screen.Bounds;
+                    Position = bounds.Position; // 픽셀 좌표 기준
+                }
             }
             catch
             {
@@ -198,5 +205,36 @@ public partial class MainWindow : Window
             // 필요 시 Topmost 해제
             // Topmost = false;
         });
+    }
+
+    private void ShowLoginScreen()
+    {
+        _loginVm = new LoginViewModel();
+        _loginVm.OnLoginSuccess += OnLoginSuccess;
+
+        var loginView = new LoginView
+        {
+            DataContext = _loginVm
+        };
+
+        Content = loginView;
+    }
+
+    private void OnLoginSuccess()
+    {
+        if (_loginVm is not null)
+        {
+            _loginVm.OnLoginSuccess -= OnLoginSuccess;
+        }
+
+        // MainView로 전환
+        var mainViewModel = new MainViewModel();
+        var mainView = new MainView
+        {
+            DataContext = mainViewModel
+        };
+
+        Content = mainView;
+        DataContext = mainViewModel;
     }
 }
