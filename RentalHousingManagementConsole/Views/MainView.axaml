@@ -16,6 +16,7 @@
 
   <UserControl.Resources>
     <conv:InverseBooleanConverter x:Key="InverseBool" />
+    <conv:PageTypeConverter x:Key="PageTypeConverter" />
   </UserControl.Resources>
 
   <Grid>
@@ -42,14 +43,56 @@
         <!-- 대시보드 타이틀 -->
         <TextBlock Text="임대주택 대시보드" FontSize="18" Foreground="White"
                    Margin="12,0,0,0" VerticalAlignment="Center"
-                   DockPanel.Dock="Left"
-                   IsVisible="{Binding IsUnitManagement, Converter={StaticResource InverseBool}}"/>
+                   DockPanel.Dock="Left">
+          <TextBlock.IsVisible>
+            <Binding Path="CurrentPage" Converter="{StaticResource PageTypeConverter}" ConverterParameter="Dashboard"/>
+          </TextBlock.IsVisible>
+        </TextBlock>
 
         <!-- 세대관리 타이틀 -->
         <TextBlock Text="임대주택 세대관리" FontSize="18" Foreground="White"
                    Margin="12,0,0,0" VerticalAlignment="Center"
-                   DockPanel.Dock="Left"
-                   IsVisible="{Binding IsUnitManagement}"/>
+                   DockPanel.Dock="Left">
+          <TextBlock.IsVisible>
+            <Binding Path="CurrentPage" Converter="{StaticResource PageTypeConverter}" ConverterParameter="UnitManagement"/>
+          </TextBlock.IsVisible>
+        </TextBlock>
+
+        <!-- 임대료/미납 타이틀 -->
+        <TextBlock Text="임대주택 임대료/미납" FontSize="18" Foreground="White"
+                   Margin="12,0,0,0" VerticalAlignment="Center"
+                   DockPanel.Dock="Left">
+          <TextBlock.IsVisible>
+            <Binding Path="CurrentPage" Converter="{StaticResource PageTypeConverter}" ConverterParameter="RentPayment"/>
+          </TextBlock.IsVisible>
+        </TextBlock>
+
+        <!-- 공과금 납입 관리 타이틀 -->
+        <TextBlock Text="임대주택 공과금 납입 관리" FontSize="18" Foreground="White"
+                   Margin="12,0,0,0" VerticalAlignment="Center"
+                   DockPanel.Dock="Left">
+          <TextBlock.IsVisible>
+            <Binding Path="CurrentPage" Converter="{StaticResource PageTypeConverter}" ConverterParameter="UtilityBills"/>
+          </TextBlock.IsVisible>
+        </TextBlock>
+
+        <!-- 통계 타이틀 -->
+        <TextBlock Text="임대주택 통계" FontSize="18" Foreground="White"
+                   Margin="12,0,0,0" VerticalAlignment="Center"
+                   DockPanel.Dock="Left">
+          <TextBlock.IsVisible>
+            <Binding Path="CurrentPage" Converter="{StaticResource PageTypeConverter}" ConverterParameter="Statistics"/>
+          </TextBlock.IsVisible>
+        </TextBlock>
+
+        <!-- 설정 타이틀 -->
+        <TextBlock Text="임대주택 설정" FontSize="18" Foreground="White"
+                   Margin="12,0,0,0" VerticalAlignment="Center"
+                   DockPanel.Dock="Left">
+          <TextBlock.IsVisible>
+            <Binding Path="CurrentPage" Converter="{StaticResource PageTypeConverter}" ConverterParameter="Settings"/>
+          </TextBlock.IsVisible>
+        </TextBlock>
 
         <!-- 전체화면 버튼 (우상단) -->
         <Button Command="{Binding ToggleFullScreenCommand}"
@@ -67,7 +110,10 @@
     <!-- 본문 -->
     <Grid Grid.Row="1">
       <!-- 대시보드 페이지 -->
-      <ScrollViewer IsVisible="{Binding IsUnitManagement, Converter={StaticResource InverseBool}}">
+      <ScrollViewer>
+        <ScrollViewer.IsVisible>
+          <Binding Path="CurrentPage" Converter="{StaticResource PageTypeConverter}" ConverterParameter="Dashboard"/>
+        </ScrollViewer.IsVisible>
         <ItemsControl ItemsSource="{Binding Groups}">
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:UnitGroupViewModel">
@@ -123,7 +169,10 @@
       </ScrollViewer>
 
       <!-- 세대관리 페이지 -->
-      <ContentControl Content="{Binding}" IsVisible="{Binding IsUnitManagement}">
+      <ContentControl Content="{Binding}">
+        <ContentControl.IsVisible>
+          <Binding Path="CurrentPage" Converter="{StaticResource PageTypeConverter}" ConverterParameter="UnitManagement"/>
+        </ContentControl.IsVisible>
         <ContentControl.ContentTemplate>
           <DataTemplate x:DataType="vm:MainViewModel">
             <Grid>
@@ -210,6 +259,372 @@
         </ContentControl.ContentTemplate>
       </ContentControl>
 
+      <!-- 임대료/미납 페이지 -->
+      <Grid>
+        <Grid.IsVisible>
+          <Binding Path="CurrentPage" Converter="{StaticResource PageTypeConverter}" ConverterParameter="RentPayment"/>
+        </Grid.IsVisible>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- 필터 영역 -->
+        <Border Grid.Row="0" Background="{DynamicResource ThemeControlMidBrush}" Padding="16,12">
+          <StackPanel Orientation="Horizontal" Spacing="12">
+            <TextBlock Text="기간:" VerticalAlignment="Center" FontWeight="Bold"/>
+            <ComboBox SelectedIndex="0" Width="150">
+              <ComboBoxItem Content="이번 달"/>
+              <ComboBoxItem Content="지난 달"/>
+              <ComboBoxItem Content="최근 3개월"/>
+              <ComboBoxItem Content="최근 6개월"/>
+              <ComboBoxItem Content="올해"/>
+            </ComboBox>
+            <TextBlock Text="상태:" VerticalAlignment="Center" FontWeight="Bold" Margin="20,0,0,0"/>
+            <Button Content="전체" Padding="12,6"/>
+            <Button Content="정상납부" Padding="12,6"/>
+            <Button Content="미납" Padding="12,6"/>
+            <Button Content="연체" Padding="12,6"/>
+          </StackPanel>
+        </Border>
+
+        <!-- 임대료 목록 -->
+        <ScrollViewer Grid.Row="1">
+          <StackPanel Margin="16">
+            <!-- 요약 카드 -->
+            <Grid Margin="0,0,0,20">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+
+              <Border Grid.Column="0" Background="#2E7D32" CornerRadius="8" Padding="20" Margin="0,0,8,0">
+                <StackPanel>
+                  <TextBlock Text="총 수입" Foreground="White" FontSize="14" Opacity="0.9"/>
+                  <TextBlock Text="₩12,500,000" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,8,0,0"/>
+                </StackPanel>
+              </Border>
+
+              <Border Grid.Column="1" Background="#1976D2" CornerRadius="8" Padding="20" Margin="4,0">
+                <StackPanel>
+                  <TextBlock Text="정상납부" Foreground="White" FontSize="14" Opacity="0.9"/>
+                  <TextBlock Text="₩11,800,000" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,8,0,0"/>
+                </StackPanel>
+              </Border>
+
+              <Border Grid.Column="2" Background="#F57C00" CornerRadius="8" Padding="20" Margin="4,0">
+                <StackPanel>
+                  <TextBlock Text="미납" Foreground="White" FontSize="14" Opacity="0.9"/>
+                  <TextBlock Text="₩500,000" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,8,0,0"/>
+                </StackPanel>
+              </Border>
+
+              <Border Grid.Column="3" Background="#D32F2F" CornerRadius="8" Padding="20" Margin="8,0,0,0">
+                <StackPanel>
+                  <TextBlock Text="연체" Foreground="White" FontSize="14" Opacity="0.9"/>
+                  <TextBlock Text="₩200,000" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,8,0,0"/>
+                </StackPanel>
+              </Border>
+            </Grid>
+
+            <!-- 임대료 상세 목록 -->
+            <TextBlock Text="납부 내역" FontSize="20" FontWeight="Bold" Margin="0,0,0,12"/>
+            <Border Background="{DynamicResource ThemeControlMidBrush}" CornerRadius="8" Padding="16">
+              <StackPanel>
+                <TextBlock Text="개발 예정: 임대료 납부 내역 테이블" FontSize="16" HorizontalAlignment="Center" Margin="0,40"/>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
+      </Grid>
+
+      <!-- 공과금 납입 관리 페이지 -->
+      <Grid>
+        <Grid.IsVisible>
+          <Binding Path="CurrentPage" Converter="{StaticResource PageTypeConverter}" ConverterParameter="UtilityBills"/>
+        </Grid.IsVisible>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- 필터 영역 -->
+        <Border Grid.Row="0" Background="{DynamicResource ThemeControlMidBrush}" Padding="16,12">
+          <StackPanel Orientation="Horizontal" Spacing="12">
+            <TextBlock Text="기간:" VerticalAlignment="Center" FontWeight="Bold"/>
+            <ComboBox SelectedIndex="0" Width="150">
+              <ComboBoxItem Content="이번 달"/>
+              <ComboBoxItem Content="지난 달"/>
+              <ComboBoxItem Content="최근 3개월"/>
+              <ComboBoxItem Content="최근 6개월"/>
+              <ComboBoxItem Content="올해"/>
+            </ComboBox>
+            <TextBlock Text="공과금 유형:" VerticalAlignment="Center" FontWeight="Bold" Margin="20,0,0,0"/>
+            <Button Content="전체" Padding="12,6"/>
+            <Button Content="전기" Padding="12,6"/>
+            <Button Content="가스" Padding="12,6"/>
+            <Button Content="수도" Padding="12,6"/>
+            <Button Content="관리비" Padding="12,6"/>
+          </StackPanel>
+        </Border>
+
+        <!-- 공과금 내용 -->
+        <ScrollViewer Grid.Row="1">
+          <StackPanel Margin="16">
+            <!-- 요약 카드 -->
+            <Grid Margin="0,0,0,20">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+
+              <Border Grid.Column="0" Background="#FF6F00" CornerRadius="8" Padding="20" Margin="0,0,8,0">
+                <StackPanel>
+                  <TextBlock Text="전기" Foreground="White" FontSize="14" Opacity="0.9"/>
+                  <TextBlock Text="₩1,250,000" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,8,0,0"/>
+                  <TextBlock Text="이번 달" Foreground="White" FontSize="12" Opacity="0.8" Margin="0,4,0,0"/>
+                </StackPanel>
+              </Border>
+
+              <Border Grid.Column="1" Background="#0288D1" CornerRadius="8" Padding="20" Margin="4,0">
+                <StackPanel>
+                  <TextBlock Text="수도" Foreground="White" FontSize="14" Opacity="0.9"/>
+                  <TextBlock Text="₩420,000" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,8,0,0"/>
+                  <TextBlock Text="이번 달" Foreground="White" FontSize="12" Opacity="0.8" Margin="0,4,0,0"/>
+                </StackPanel>
+              </Border>
+
+              <Border Grid.Column="2" Background="#E65100" CornerRadius="8" Padding="20" Margin="4,0">
+                <StackPanel>
+                  <TextBlock Text="가스" Foreground="White" FontSize="14" Opacity="0.9"/>
+                  <TextBlock Text="₩680,000" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,8,0,0"/>
+                  <TextBlock Text="이번 달" Foreground="White" FontSize="12" Opacity="0.8" Margin="0,4,0,0"/>
+                </StackPanel>
+              </Border>
+
+              <Border Grid.Column="3" Background="#5E35B1" CornerRadius="8" Padding="20" Margin="8,0,0,0">
+                <StackPanel>
+                  <TextBlock Text="관리비" Foreground="White" FontSize="14" Opacity="0.9"/>
+                  <TextBlock Text="₩1,850,000" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,8,0,0"/>
+                  <TextBlock Text="이번 달" Foreground="White" FontSize="12" Opacity="0.8" Margin="0,4,0,0"/>
+                </StackPanel>
+              </Border>
+            </Grid>
+
+            <!-- 세대별 공과금 목록 -->
+            <TextBlock Text="세대별 공과금 내역" FontSize="20" FontWeight="Bold" Margin="0,0,0,12"/>
+
+            <!-- 샘플 데이터 -->
+            <ItemsControl ItemsSource="{Binding Groups}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:UnitGroupViewModel">
+                  <StackPanel Margin="0,0,0,16">
+                    <TextBlock Text="{Binding GroupName}" FontSize="18" FontWeight="Bold" Margin="0,0,0,8"/>
+
+                    <ItemsControl ItemsSource="{Binding Units}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:UnitTileViewModel">
+                          <Border Background="{DynamicResource ThemeControlMidBrush}"
+                                  CornerRadius="8" Padding="16" Margin="0,0,0,8">
+                            <Grid>
+                              <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="200"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="150"/>
+                              </Grid.ColumnDefinitions>
+
+                              <TextBlock Grid.Column="0" Text="{Binding UnitName}" FontWeight="Bold" VerticalAlignment="Center"/>
+
+                              <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <Border Background="#FF6F00" CornerRadius="4" Padding="8,4">
+                                  <TextBlock Text="전기" Foreground="White" FontSize="11"/>
+                                </Border>
+                                <Border Background="#0288D1" CornerRadius="4" Padding="8,4">
+                                  <TextBlock Text="수도" Foreground="White" FontSize="11"/>
+                                </Border>
+                                <Border Background="#E65100" CornerRadius="4" Padding="8,4">
+                                  <TextBlock Text="가스" Foreground="White" FontSize="11"/>
+                                </Border>
+                                <Border Background="#5E35B1" CornerRadius="4" Padding="8,4">
+                                  <TextBlock Text="관리비" Foreground="White" FontSize="11"/>
+                                </Border>
+                              </StackPanel>
+
+                              <TextBlock Grid.Column="2" Text="₩35,000" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                              <TextBlock Grid.Column="3" Text="₩12,000" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                              <TextBlock Grid.Column="4" Text="₩19,000" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                              <TextBlock Grid.Column="5" Text="₩52,000" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                            </Grid>
+                          </Border>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </StackPanel>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </ScrollViewer>
+      </Grid>
+
+      <!-- 통계 페이지 -->
+      <Grid>
+        <Grid.IsVisible>
+          <Binding Path="CurrentPage" Converter="{StaticResource PageTypeConverter}" ConverterParameter="Statistics"/>
+        </Grid.IsVisible>
+        <ScrollViewer>
+          <StackPanel Margin="16">
+            <TextBlock Text="통계 대시보드" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+
+            <!-- 통계 카드 그리드 -->
+            <Grid Margin="0,0,0,20">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+              </Grid.RowDefinitions>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+
+              <!-- 입주율 -->
+              <Border Grid.Row="0" Grid.Column="0" Background="{DynamicResource ThemeControlMidBrush}"
+                      CornerRadius="8" Padding="20" Margin="0,0,8,8">
+                <StackPanel>
+                  <TextBlock Text="입주율" FontSize="18" FontWeight="Bold"/>
+                  <TextBlock Text="85.7%" FontSize="36" FontWeight="Bold" Margin="0,12,0,0"/>
+                  <TextBlock Text="30 / 35 세대" FontSize="14" Opacity="0.7" Margin="0,4,0,0"/>
+                </StackPanel>
+              </Border>
+
+              <!-- 평균 임대료 -->
+              <Border Grid.Row="0" Grid.Column="1" Background="{DynamicResource ThemeControlMidBrush}"
+                      CornerRadius="8" Padding="20" Margin="8,0,0,8">
+                <StackPanel>
+                  <TextBlock Text="평균 임대료" FontSize="18" FontWeight="Bold"/>
+                  <TextBlock Text="₩416,667" FontSize="36" FontWeight="Bold" Margin="0,12,0,0"/>
+                  <TextBlock Text="월 평균" FontSize="14" Opacity="0.7" Margin="0,4,0,0"/>
+                </StackPanel>
+              </Border>
+
+              <!-- 미납률 -->
+              <Border Grid.Row="1" Grid.Column="0" Background="{DynamicResource ThemeControlMidBrush}"
+                      CornerRadius="8" Padding="20" Margin="0,8,8,0">
+                <StackPanel>
+                  <TextBlock Text="미납률" FontSize="18" FontWeight="Bold"/>
+                  <TextBlock Text="5.6%" FontSize="36" FontWeight="Bold" Margin="0,12,0,0"/>
+                  <TextBlock Text="2 / 35 세대" FontSize="14" Opacity="0.7" Margin="0,4,0,0"/>
+                </StackPanel>
+              </Border>
+
+              <!-- 평균 체류기간 -->
+              <Border Grid.Row="1" Grid.Column="1" Background="{DynamicResource ThemeControlMidBrush}"
+                      CornerRadius="8" Padding="20" Margin="8,8,0,0">
+                <StackPanel>
+                  <TextBlock Text="평균 체류기간" FontSize="18" FontWeight="Bold"/>
+                  <TextBlock Text="2.3년" FontSize="36" FontWeight="Bold" Margin="0,12,0,0"/>
+                  <TextBlock Text="입주자 평균" FontSize="14" Opacity="0.7" Margin="0,4,0,0"/>
+                </StackPanel>
+              </Border>
+            </Grid>
+
+            <!-- 차트 영역 (플레이스홀더) -->
+            <TextBlock Text="월별 수입 추이" FontSize="20" FontWeight="Bold" Margin="0,20,0,12"/>
+            <Border Background="{DynamicResource ThemeControlMidBrush}" CornerRadius="8" Padding="20" Height="300">
+              <TextBlock Text="개발 예정: 차트 영역" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.6"/>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
+      </Grid>
+
+      <!-- 설정 페이지 -->
+      <Grid>
+        <Grid.IsVisible>
+          <Binding Path="CurrentPage" Converter="{StaticResource PageTypeConverter}" ConverterParameter="Settings"/>
+        </Grid.IsVisible>
+        <ScrollViewer>
+          <StackPanel Margin="16" MaxWidth="800">
+            <TextBlock Text="설정" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+
+            <!-- 일반 설정 -->
+            <TextBlock Text="일반" FontSize="18" FontWeight="Bold" Margin="0,0,0,12"/>
+            <Border Background="{DynamicResource ThemeControlMidBrush}" CornerRadius="8" Padding="20" Margin="0,0,0,20">
+              <StackPanel Spacing="16">
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  <StackPanel Grid.Column="0">
+                    <TextBlock Text="다크 모드" FontWeight="Bold"/>
+                    <TextBlock Text="어두운 테마 사용" FontSize="12" Opacity="0.7"/>
+                  </StackPanel>
+                  <ToggleSwitch Grid.Column="1" VerticalAlignment="Center"/>
+                </Grid>
+
+                <Separator/>
+
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  <StackPanel Grid.Column="0">
+                    <TextBlock Text="알림" FontWeight="Bold"/>
+                    <TextBlock Text="중요 이벤트 알림 받기" FontSize="12" Opacity="0.7"/>
+                  </StackPanel>
+                  <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="True"/>
+                </Grid>
+
+                <Separator/>
+
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="200"/>
+                  </Grid.ColumnDefinitions>
+                  <StackPanel Grid.Column="0">
+                    <TextBlock Text="언어" FontWeight="Bold"/>
+                    <TextBlock Text="인터페이스 언어 선택" FontSize="12" Opacity="0.7"/>
+                  </StackPanel>
+                  <ComboBox Grid.Column="1" SelectedIndex="0" VerticalAlignment="Center">
+                    <ComboBoxItem Content="한국어"/>
+                    <ComboBoxItem Content="English"/>
+                  </ComboBox>
+                </Grid>
+              </StackPanel>
+            </Border>
+
+            <!-- 데이터 설정 -->
+            <TextBlock Text="데이터" FontSize="18" FontWeight="Bold" Margin="0,0,0,12"/>
+            <Border Background="{DynamicResource ThemeControlMidBrush}" CornerRadius="8" Padding="20" Margin="0,0,0,20">
+              <StackPanel Spacing="12">
+                <Button Content="데이터 내보내기" HorizontalAlignment="Left" Padding="16,8"/>
+                <Button Content="데이터 가져오기" HorizontalAlignment="Left" Padding="16,8"/>
+                <Button Content="데이터베이스 백업" HorizontalAlignment="Left" Padding="16,8"/>
+              </StackPanel>
+            </Border>
+
+            <!-- 정보 -->
+            <TextBlock Text="정보" FontSize="18" FontWeight="Bold" Margin="0,0,0,12"/>
+            <Border Background="{DynamicResource ThemeControlMidBrush}" CornerRadius="8" Padding="20">
+              <StackPanel Spacing="8">
+                <TextBlock Text="버전: 1.0.0" FontSize="14"/>
+                <TextBlock Text="임대주택 관리 콘솔" FontSize="14"/>
+                <TextBlock Text="© 2025 All rights reserved" FontSize="12" Opacity="0.7" Margin="0,8,0,0"/>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
+      </Grid>
+
       <!-- 오버레이 클릭 닫기 -->
       <ToggleButton x:Name="OverlayCloseButton"
                     IsVisible="{Binding IsPaneOpen}"
@@ -244,15 +659,18 @@
             <Button Content="세대 관리" Command="{Binding OpenUnitManagementCommand}"
                     HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
                     Padding="16,12" Background="Transparent" BorderThickness="0"/>
-            <Button Content="임대료/미납"
+            <Button Content="임대료/미납" Command="{Binding OpenRentPaymentCommand}"
                     HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
-                    Padding="16,12" Background="Transparent" BorderThickness="0" IsEnabled="False"/>
-            <Button Content="통계"
+                    Padding="16,12" Background="Transparent" BorderThickness="0"/>
+            <Button Content="공과금 납입 관리" Command="{Binding OpenUtilityBillsCommand}"
                     HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
-                    Padding="16,12" Background="Transparent" BorderThickness="0" IsEnabled="False"/>
-            <Button Content="설정"
+                    Padding="16,12" Background="Transparent" BorderThickness="0"/>
+            <Button Content="통계" Command="{Binding OpenStatisticsCommand}"
                     HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
-                    Padding="16,12" Background="Transparent" BorderThickness="0" IsEnabled="False"/>
+                    Padding="16,12" Background="Transparent" BorderThickness="0"/>
+            <Button Content="설정" Command="{Binding OpenSettingsCommand}"
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                    Padding="16,12" Background="Transparent" BorderThickness="0"/>
           </StackPanel>
         </DockPanel>
       </Border>

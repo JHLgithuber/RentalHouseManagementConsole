@@ -5,6 +5,16 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace RentalHousingManagementConsole.ViewModels;
 
+public enum PageType
+{
+    Dashboard,
+    UnitManagement,
+    RentPayment,
+    UtilityBills,
+    Statistics,
+    Settings
+}
+
 public partial class MainViewModel : ViewModelBase
 {
     [ObservableProperty]
@@ -13,9 +23,9 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isFullScreen;
 
-    // 현재 페이지가 세대관리인지 여부 (true면 세대관리, false면 대시보드)
+    // 현재 활성화된 페이지를 나타내는 열거형
     [ObservableProperty]
-    private bool _isUnitManagement;
+    private PageType _currentPage = PageType.Dashboard;
 
     [RelayCommand]
     private void ToggleFullScreen()
@@ -32,7 +42,7 @@ public partial class MainViewModel : ViewModelBase
     public MainViewModel()
     {
         // 초기 페이지: 대시보드
-        IsUnitManagement = false;
+        CurrentPage = PageType.Dashboard;
 
         // Sample data for demonstration
         var sample = new[]
@@ -77,14 +87,42 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     private void OpenDashboard()
     {
-        IsUnitManagement = false;
+        CurrentPage = PageType.Dashboard;
         IsPaneOpen = false;
     }
 
     [RelayCommand]
     private void OpenUnitManagement()
     {
-        IsUnitManagement = true;
+        CurrentPage = PageType.UnitManagement;
+        IsPaneOpen = false;
+    }
+
+    [RelayCommand]
+    private void OpenRentPayment()
+    {
+        CurrentPage = PageType.RentPayment;
+        IsPaneOpen = false;
+    }
+
+    [RelayCommand]
+    private void OpenUtilityBills()
+    {
+        CurrentPage = PageType.UtilityBills;
+        IsPaneOpen = false;
+    }
+
+    [RelayCommand]
+    private void OpenStatistics()
+    {
+        CurrentPage = PageType.Statistics;
+        IsPaneOpen = false;
+    }
+
+    [RelayCommand]
+    private void OpenSettings()
+    {
+        CurrentPage = PageType.Settings;
         IsPaneOpen = false;
     }
 }
