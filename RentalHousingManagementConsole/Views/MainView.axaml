@@ -238,8 +238,12 @@
 
                                   <!-- 액션 버튼 -->
                                   <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8">
-                                    <Button Content="상세" Padding="8,4"/>
-                                    <Button Content="수정" Padding="8,4"/>
+                                    <Button Content="상세" Padding="8,4"
+                                            Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).ShowUnitDetailCommand}"
+                                            CommandParameter="{Binding}"/>
+                                    <Button Content="수정" Padding="8,4"
+                                            Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).ShowUnitEditCommand}"
+                                            CommandParameter="{Binding}"/>
                                   </StackPanel>
                                 </Grid>
                               </Border>
@@ -673,6 +677,152 @@
                     Padding="16,12" Background="Transparent" BorderThickness="0"/>
           </StackPanel>
         </DockPanel>
+      </Border>
+
+      <!-- 세대 상세 다이얼로그 -->
+      <Border IsVisible="{Binding IsDetailDialogOpen}"
+              Background="#80000000"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch">
+        <Border Background="White"
+                Width="500"
+                CornerRadius="8"
+                Padding="24"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                BoxShadow="0 8 32 0 #60000000">
+          <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="*"/>
+              <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- 헤더 -->
+            <TextBlock Grid.Row="0" Text="세대 상세 정보" FontSize="20" FontWeight="Bold" Margin="0,0,0,20"/>
+
+            <!-- 내용 -->
+            <ScrollViewer Grid.Row="1" MaxHeight="400">
+              <StackPanel Spacing="16" DataContext="{Binding SelectedUnit}">
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="120"/>
+                    <ColumnDefinition Width="*"/>
+                  </Grid.ColumnDefinitions>
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                  </Grid.RowDefinitions>
+
+                  <TextBlock Grid.Row="0" Grid.Column="0" Text="세대명:" FontWeight="Bold" VerticalAlignment="Center"/>
+                  <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding UnitName}" VerticalAlignment="Center" Margin="8,0,0,0"/>
+
+                  <TextBlock Grid.Row="1" Grid.Column="0" Text="입주자명:" FontWeight="Bold" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                  <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding TenantName}" VerticalAlignment="Center" Margin="8,8,0,0"/>
+
+                  <TextBlock Grid.Row="2" Grid.Column="0" Text="연락처:" FontWeight="Bold" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                  <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding PhoneNumber}" VerticalAlignment="Center" Margin="8,8,0,0"/>
+
+                  <TextBlock Grid.Row="3" Grid.Column="0" Text="입주일:" FontWeight="Bold" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                  <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding MoveInDate, StringFormat='{}{0:yyyy-MM-dd}'}" VerticalAlignment="Center" Margin="8,8,0,0"/>
+
+                  <TextBlock Grid.Row="4" Grid.Column="0" Text="월 임대료:" FontWeight="Bold" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                  <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding MonthlyRent, StringFormat='₩{0:N0}'}" VerticalAlignment="Center" Margin="8,8,0,0"/>
+
+                  <TextBlock Grid.Row="5" Grid.Column="0" Text="보증금:" FontWeight="Bold" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                  <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding Deposit, StringFormat='₩{0:N0}'}" VerticalAlignment="Center" Margin="8,8,0,0"/>
+
+                  <TextBlock Grid.Row="6" Grid.Column="0" Text="상태:" FontWeight="Bold" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                  <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding Message}" VerticalAlignment="Center" Margin="8,8,0,0"/>
+
+                  <TextBlock Grid.Row="7" Grid.Column="0" Text="비고:" FontWeight="Bold" VerticalAlignment="Top" Margin="0,8,0,0"/>
+                  <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding Notes}" TextWrapping="Wrap" VerticalAlignment="Center" Margin="8,8,0,0"/>
+                </Grid>
+              </StackPanel>
+            </ScrollViewer>
+
+            <!-- 버튼 -->
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,20,0,0">
+              <Button Content="닫기" Padding="16,8" Command="{Binding CloseDetailDialogCommand}"/>
+            </StackPanel>
+          </Grid>
+        </Border>
+      </Border>
+
+      <!-- 세대 수정 다이얼로그 -->
+      <Border IsVisible="{Binding IsEditDialogOpen}"
+              Background="#80000000"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch">
+        <Border Background="White"
+                Width="500"
+                CornerRadius="8"
+                Padding="24"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                BoxShadow="0 8 32 0 #60000000">
+          <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="*"/>
+              <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- 헤더 -->
+            <TextBlock Grid.Row="0" Text="세대 정보 수정" FontSize="20" FontWeight="Bold" Margin="0,0,0,20"/>
+
+            <!-- 내용 -->
+            <ScrollViewer Grid.Row="1" MaxHeight="400">
+              <StackPanel Spacing="12" DataContext="{Binding SelectedUnit}">
+                <TextBlock Text="세대명" FontWeight="Bold"/>
+                <TextBox Text="{Binding UnitName}" Watermark="예: 101동 101호"/>
+
+                <TextBlock Text="입주자명" FontWeight="Bold" Margin="0,8,0,0"/>
+                <TextBox Text="{Binding TenantName}" Watermark="입주자 이름"/>
+
+                <TextBlock Text="연락처" FontWeight="Bold" Margin="0,8,0,0"/>
+                <TextBox Text="{Binding PhoneNumber}" Watermark="010-1234-5678"/>
+
+                <TextBlock Text="입주일" FontWeight="Bold" Margin="0,8,0,0"/>
+                <DatePicker SelectedDate="{Binding MoveInDate}"/>
+
+                <TextBlock Text="월 임대료 (원)" FontWeight="Bold" Margin="0,8,0,0"/>
+                <TextBox Text="{Binding MonthlyRent}" Watermark="400000"/>
+
+                <TextBlock Text="보증금 (원)" FontWeight="Bold" Margin="0,8,0,0"/>
+                <TextBox Text="{Binding Deposit}" Watermark="5000000"/>
+
+                <TextBlock Text="상태" FontWeight="Bold" Margin="0,8,0,0"/>
+                <ComboBox SelectedIndex="0">
+                  <ComboBoxItem Content="정상"/>
+                  <ComboBoxItem Content="주의"/>
+                  <ComboBoxItem Content="긴급"/>
+                  <ComboBoxItem Content="공실"/>
+                  <ComboBoxItem Content="수리 중"/>
+                </ComboBox>
+
+                <TextBlock Text="비고" FontWeight="Bold" Margin="0,8,0,0"/>
+                <TextBox Text="{Binding Notes}"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         Height="80"
+                         Watermark="특이사항 입력"/>
+              </StackPanel>
+            </ScrollViewer>
+
+            <!-- 버튼 -->
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,20,0,0">
+              <Button Content="취소" Padding="16,8" Command="{Binding CloseEditDialogCommand}"/>
+              <Button Content="저장" Padding="16,8" Command="{Binding SaveUnitEditCommand}"/>
+            </StackPanel>
+          </Grid>
+        </Border>
       </Border>
     </Grid>
   </Grid>

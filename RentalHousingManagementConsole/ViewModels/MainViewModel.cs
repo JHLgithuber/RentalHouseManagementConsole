@@ -27,6 +27,17 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private PageType _currentPage = PageType.Dashboard;
 
+    // 선택된 세대 정보
+    [ObservableProperty]
+    private UnitTileViewModel? _selectedUnit;
+
+    // 다이얼로그 표시 여부
+    [ObservableProperty]
+    private bool _isDetailDialogOpen;
+
+    [ObservableProperty]
+    private bool _isEditDialogOpen;
+
     [RelayCommand]
     private void ToggleFullScreen()
     {
@@ -124,5 +135,38 @@ public partial class MainViewModel : ViewModelBase
     {
         CurrentPage = PageType.Settings;
         IsPaneOpen = false;
+    }
+
+    [RelayCommand]
+    private void ShowUnitDetail(UnitTileViewModel unit)
+    {
+        SelectedUnit = unit;
+        IsDetailDialogOpen = true;
+    }
+
+    [RelayCommand]
+    private void ShowUnitEdit(UnitTileViewModel unit)
+    {
+        SelectedUnit = unit;
+        IsEditDialogOpen = true;
+    }
+
+    [RelayCommand]
+    private void CloseDetailDialog()
+    {
+        IsDetailDialogOpen = false;
+    }
+
+    [RelayCommand]
+    private void CloseEditDialog()
+    {
+        IsEditDialogOpen = false;
+    }
+
+    [RelayCommand]
+    private void SaveUnitEdit()
+    {
+        // 저장 로직 (추후 구현)
+        IsEditDialogOpen = false;
     }
 }
