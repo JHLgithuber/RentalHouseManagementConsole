@@ -13,6 +13,10 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isFullScreen;
 
+    // 현재 페이지가 세대관리인지 여부 (true면 세대관리, false면 대시보드)
+    [ObservableProperty]
+    private bool _isUnitManagement;
+
     [RelayCommand]
     private void ToggleFullScreen()
     {
@@ -27,6 +31,9 @@ public partial class MainViewModel : ViewModelBase
 
     public MainViewModel()
     {
+        // 초기 페이지: 대시보드
+        IsUnitManagement = false;
+
         // Sample data for demonstration
         var sample = new[]
         {
@@ -65,5 +72,19 @@ public partial class MainViewModel : ViewModelBase
             }
             group.Units.Add(vm);
         }
+    }
+
+    [RelayCommand]
+    private void OpenDashboard()
+    {
+        IsUnitManagement = false;
+        IsPaneOpen = false;
+    }
+
+    [RelayCommand]
+    private void OpenUnitManagement()
+    {
+        IsUnitManagement = true;
+        IsPaneOpen = false;
     }
 }

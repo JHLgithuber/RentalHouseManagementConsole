@@ -1,0 +1,94 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:RentalHousingManagementConsole.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+             x:Class="RentalHousingManagementConsole.Views.UnitManagementView"
+             x:DataType="vm:MainViewModel">
+
+  <Design.DataContext>
+    <vm:MainViewModel />
+  </Design.DataContext>
+
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
+
+    <!-- 검색 및 필터 영역 -->
+    <Border Grid.Row="0" Background="{DynamicResource ThemeControlMidBrush}" Padding="16,12">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- 검색바 -->
+        <TextBox Grid.Column="0" Watermark="세대 검색 (예: 101동 101호)" Margin="0,0,12,0"/>
+
+        <!-- 필터 버튼 -->
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+          <Button Content="전체" Padding="12,6"/>
+          <Button Content="정상" Padding="12,6"/>
+          <Button Content="주의" Padding="12,6"/>
+          <Button Content="긴급" Padding="12,6"/>
+          <Button Content="공실" Padding="12,6"/>
+          <Button Content="수리 중" Padding="12,6"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- 세대 목록 (DataGrid 또는 ListBox) -->
+    <ScrollViewer Grid.Row="1">
+      <ItemsControl ItemsSource="{Binding Groups}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:UnitGroupViewModel">
+            <StackPanel Margin="0,8">
+              <!-- 그룹 이름 (예: "101동") -->
+              <TextBlock Text="{Binding GroupName}" FontSize="20" FontWeight="Bold" Margin="16,8,0,8"/>
+
+              <!-- 그룹 내 세대 목록 -->
+              <ItemsControl ItemsSource="{Binding Units}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:UnitTileViewModel">
+                    <Border CornerRadius="4" Margin="8" Padding="12" Background="{DynamicResource ThemeControlMidBrush}"
+                            BorderBrush="{Binding BackgroundBrush}" BorderThickness="0,0,0,4">
+                      <Grid>
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="200"/>
+                          <ColumnDefinition Width="*"/>
+                          <ColumnDefinition Width="150"/>
+                          <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- 세대명 -->
+                        <TextBlock Grid.Column="0" Text="{Binding UnitName}" FontWeight="Bold" FontSize="16" VerticalAlignment="Center"/>
+
+                        <!-- 메시지/상태 -->
+                        <TextBlock Grid.Column="1" Text="{Binding Message}" VerticalAlignment="Center" Margin="12,0"/>
+
+                        <!-- 지표 -->
+                        <TextBlock Grid.Column="2" Text="{Binding MetricText}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+
+                        <!-- 액션 버튼 -->
+                        <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8">
+                          <Button Content="상세" Padding="8,4"/>
+                          <Button Content="수정" Padding="8,4"/>
+                        </StackPanel>
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+
+              <!-- 그룹간 구분선 -->
+              <Border Height="1" Background="#30000000" Margin="16,16,16,8"/>
+            </StackPanel>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+  </Grid>
+</UserControl>

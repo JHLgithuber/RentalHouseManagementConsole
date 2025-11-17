@@ -38,11 +38,19 @@
                       DockPanel.Dock="Left">
           <Path Data="M3,6 H21 M3,12 H21 M3,18 H21" Stroke="White" StrokeThickness="2" StrokeLineCap="Round"/>
         </ToggleButton>
-        
+
+        <!-- 대시보드 타이틀 -->
         <TextBlock Text="임대주택 대시보드" FontSize="18" Foreground="White"
                    Margin="12,0,0,0" VerticalAlignment="Center"
-                   DockPanel.Dock="Left"/>
-        
+                   DockPanel.Dock="Left"
+                   IsVisible="{Binding IsUnitManagement, Converter={StaticResource InverseBool}}"/>
+
+        <!-- 세대관리 타이틀 -->
+        <TextBlock Text="임대주택 세대관리" FontSize="18" Foreground="White"
+                   Margin="12,0,0,0" VerticalAlignment="Center"
+                   DockPanel.Dock="Left"
+                   IsVisible="{Binding IsUnitManagement}"/>
+
         <!-- 전체화면 버튼 (우상단) -->
         <Button Command="{Binding ToggleFullScreenCommand}"
                 Width="40" Height="36"
@@ -50,7 +58,7 @@
                 HorizontalAlignment="Right"
                 DockPanel.Dock="Right"
                 ToolTip.Tip="전체화면">
-          <Path Data="M5,5 L5,10 M5,5 L10,5 M19,5 L19,10 M19,5 L14,5 M5,19 L5,14 M5,19 L10,19 M19,19 L19,14 M19,19 L14,19" 
+          <Path Data="M5,5 L5,10 M5,5 L10,5 M19,5 L19,10 M19,5 L14,5 M5,19 L5,14 M5,19 L10,19 M19,19 L19,14 M19,19 L14,19"
                 Stroke="White" StrokeThickness="2" StrokeLineCap="Round"/>
         </Button>
       </DockPanel>
@@ -58,8 +66,8 @@
 
     <!-- 본문 -->
     <Grid Grid.Row="1">
-      <!-- 타일 영역 (그룹별로 표시) -->
-      <ScrollViewer>
+      <!-- 대시보드 페이지 -->
+      <ScrollViewer IsVisible="{Binding IsUnitManagement, Converter={StaticResource InverseBool}}">
         <ItemsControl ItemsSource="{Binding Groups}">
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:UnitGroupViewModel">
@@ -114,6 +122,94 @@
         </ItemsControl>
       </ScrollViewer>
 
+      <!-- 세대관리 페이지 -->
+      <ContentControl Content="{Binding}" IsVisible="{Binding IsUnitManagement}">
+        <ContentControl.ContentTemplate>
+          <DataTemplate x:DataType="vm:MainViewModel">
+            <Grid>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+              </Grid.RowDefinitions>
+
+              <!-- 검색 및 필터 영역 -->
+              <Border Grid.Row="0" Background="{DynamicResource ThemeControlMidBrush}" Padding="16,12">
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+
+                  <!-- 검색바 -->
+                  <TextBox Grid.Column="0" Watermark="세대 검색 (예: 101동 101호)" Margin="0,0,12,0"/>
+
+                  <!-- 필터 버튼 -->
+                  <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                    <Button Content="전체" Padding="12,6"/>
+                    <Button Content="정상" Padding="12,6"/>
+                    <Button Content="주의" Padding="12,6"/>
+                    <Button Content="긴급" Padding="12,6"/>
+                    <Button Content="공실" Padding="12,6"/>
+                    <Button Content="수리 중" Padding="12,6"/>
+                  </StackPanel>
+                </Grid>
+              </Border>
+
+              <!-- 세대 목록 -->
+              <ScrollViewer Grid.Row="1">
+                <ItemsControl ItemsSource="{Binding Groups}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:UnitGroupViewModel">
+                      <StackPanel Margin="0,8">
+                        <!-- 그룹 이름 (예: "101동") -->
+                        <TextBlock Text="{Binding GroupName}" FontSize="20" FontWeight="Bold" Margin="16,8,0,8"/>
+
+                        <!-- 그룹 내 세대 목록 -->
+                        <ItemsControl ItemsSource="{Binding Units}">
+                          <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:UnitTileViewModel">
+                              <Border CornerRadius="4" Margin="8" Padding="12" Background="{DynamicResource ThemeControlMidBrush}"
+                                      BorderBrush="{Binding BackgroundBrush}" BorderThickness="0,0,0,4">
+                                <Grid>
+                                  <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="200"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                  </Grid.ColumnDefinitions>
+
+                                  <!-- 세대명 -->
+                                  <TextBlock Grid.Column="0" Text="{Binding UnitName}" FontWeight="Bold" FontSize="16" VerticalAlignment="Center"/>
+
+                                  <!-- 메시지/상태 -->
+                                  <TextBlock Grid.Column="1" Text="{Binding Message}" VerticalAlignment="Center" Margin="12,0"/>
+
+                                  <!-- 지표 -->
+                                  <TextBlock Grid.Column="2" Text="{Binding MetricText}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+
+                                  <!-- 액션 버튼 -->
+                                  <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8">
+                                    <Button Content="상세" Padding="8,4"/>
+                                    <Button Content="수정" Padding="8,4"/>
+                                  </StackPanel>
+                                </Grid>
+                              </Border>
+                            </DataTemplate>
+                          </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- 그룹간 구분선 -->
+                        <Border Height="1" Background="#30000000" Margin="16,16,16,8"/>
+                      </StackPanel>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </ScrollViewer>
+            </Grid>
+          </DataTemplate>
+        </ContentControl.ContentTemplate>
+      </ContentControl>
+
       <!-- 오버레이 클릭 닫기 -->
       <ToggleButton x:Name="OverlayCloseButton"
                     IsVisible="{Binding IsPaneOpen}"
@@ -137,17 +233,27 @@
 
       <!-- 슬라이드 메뉴 -->
       <Border IsVisible="{Binding IsPaneOpen}"
-              Width="280" Background="{DynamicResource ThemeBackgroundBrush}"
+              Width="280" Background="#F5F5F5"
               HorizontalAlignment="Left" VerticalAlignment="Stretch"
               BoxShadow="0 8 24 0 #40000000">
         <DockPanel>
-          <ListBox>
-            <ListBoxItem>대시보드</ListBoxItem>
-            <ListBoxItem>세대 관리</ListBoxItem>
-            <ListBoxItem>임대료/미납</ListBoxItem>
-            <ListBoxItem>통계</ListBoxItem>
-            <ListBoxItem>설정</ListBoxItem>
-          </ListBox>
+          <StackPanel>
+            <Button Content="대시보드" Command="{Binding OpenDashboardCommand}"
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                    Padding="16,12" Background="Transparent" BorderThickness="0"/>
+            <Button Content="세대 관리" Command="{Binding OpenUnitManagementCommand}"
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                    Padding="16,12" Background="Transparent" BorderThickness="0"/>
+            <Button Content="임대료/미납"
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                    Padding="16,12" Background="Transparent" BorderThickness="0" IsEnabled="False"/>
+            <Button Content="통계"
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                    Padding="16,12" Background="Transparent" BorderThickness="0" IsEnabled="False"/>
+            <Button Content="설정"
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                    Padding="16,12" Background="Transparent" BorderThickness="0" IsEnabled="False"/>
+          </StackPanel>
         </DockPanel>
       </Border>
     </Grid>
