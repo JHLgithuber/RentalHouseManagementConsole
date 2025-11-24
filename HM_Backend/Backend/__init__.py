@@ -163,22 +163,28 @@ class Connect_to_Frontend:
 
             # JWT 토큰 검증 및 클레임 추출
             jwd_checked_data = self.jwt_checked(message.get('access_token'))
-            if jwd_checked_data.get('identity') is None and jwd_checked_data.get('permission') is None: #jwt 토큰검증 실패
+            if jwd_checked_data.get('user_identity') is None and jwd_checked_data.get('permission') is None: #jwt 토큰검증 실패
                 self.socketio.emit('error_data', "Signature has expired", to=sid)
                 self.app.logger.info(f"error_info: Signature has expired message to {sid}")
+                return  # 토큰 검증 실패 시 조기 종료
 
 
             response_data_from_result_entity_instance_list=[]
             try:
+                self.app.logger.info(f"Calling Mgmt with: id={jwd_checked_data['user_identity']}, curd={curd}, entity={message.get('entity')}, permission={jwd_checked_data['permission']}")
                 response_data_from_result_entity_instance_list = mgmt_class.Mgmt(
                                                 id=jwd_checked_data['user_identity'], curd=curd,
                                                 entity=message.get('entity'), where=message.get('where'),
                                                 option=message.get('option'), property=message.get('property'), data=message.get('data'), server=self,
                                                 permission=jwd_checked_data['permission']).get_result_entity_instance_list()  # DB자료 없을때 예외처리 필요
-                #print("\nresponse_data_from_result_entity_instance_list\t",response_data_from_result_entity_instance_list)
+                self.app.logger.info(f"Mgmt returned {len(response_data_from_result_entity_instance_list)} items")
             except Exception as e:
                 self.app.logger.error(f"Error mgmt data in DB: {e}")
+                import traceback
+                self.app.logger.error(f"Traceback: {traceback.format_exc()}")
                 self.socketio.emit('error_data', f"Error mgmt data in DB: {e}", to=sid)
+                # 에러 발생 시에도 빈 배열로 응답 전송
+                response_data_from_result_entity_instance_list = []
 
             log_entry = {
                 'SID': sid,
@@ -202,13 +208,11 @@ class Connect_to_Frontend:
                     return obj.isoformat()
                 return obj
 
-            #print("\njson_data\t",json_data)
-
             response_data_to_frontend=json.dumps({
-
                 "JSON_DATA": convert_dates(json_data)
             }, indent=4)
 
+            self.app.logger.info(f"Sending response to {sid}: {len(json_data)} items")
             self.socketio.emit('responsed_data', response_data_to_frontend, to=sid)
             #self.socketio.emit('receive_message', log_entry)
             self.app.logger.info(f"Sent message: {response_data_to_frontend} to {sid}")

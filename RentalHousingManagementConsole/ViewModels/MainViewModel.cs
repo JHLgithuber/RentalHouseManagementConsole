@@ -91,10 +91,17 @@ public partial class MainViewModel : ViewModelBase
         _unitsLoaded = true;
         try
         {
-            // 엔터티 명은 백엔드 mgmt_class 설계에 따라 변경될 수 있음. 기본 값으로 "Units"를 시도.
-            var json = await DataGateway.Instance.ReadAsync("Units").ConfigureAwait(false);
+            Console.WriteLine("=== LoadUnitsAsync Started ===");
+
+            // 엔터티 명은 백엔드 mgmt_class 설계에 따라 변경될 수 있음. 백엔드의 "Houseinfo_data" 테이블 사용
+            var json = await DataGateway.Instance.ReadAsync("Houseinfo_data").ConfigureAwait(false);
+
+            Console.WriteLine($"JSON received: {json.HasValue}");
+
             if (json is JsonElement el)
             {
+                Console.WriteLine($"JsonElement ValueKind: {el.ValueKind}");
+
                 // JSON_DATA가 배열이라고 가정하고 매핑 시도: { unitName, message, metric, status }
                 if (el.ValueKind == JsonValueKind.Array)
                 {
@@ -106,44 +113,58 @@ public partial class MainViewModel : ViewModelBase
                     });
 
                     var list = el.EnumerateArray().ToList();
+                    Console.WriteLine($"Array items count: {list.Count}");
+
                     if (list.Count == 0)
                     {
+                        Console.WriteLine("Empty array - no units to display");
                         // 빈 DB: 컬렉션을 비운 상태로 유지
                         return;
                     }
 
                     foreach (var item in list)
                     {
-                        var unitName = item.TryGetProperty("unitName", out var p1) ? p1.GetString() : null;
-                        unitName ??= item.TryGetProperty("UnitName", out var p1b) ? p1b.GetString() : null;
-                        var message = item.TryGetProperty("message", out var p2) ? p2.GetString() : null;
-                        var metric = item.TryGetProperty("metric", out var p3) && p3.ValueKind == JsonValueKind.Number ? p3.GetDouble() : (double?)null;
-                        var statusStr = item.TryGetProperty("status", out var p4) ? p4.GetString() : null;
+                        Console.WriteLine($"Processing item: {item}");
 
-                        var status = statusStr switch
-                        {
-                            "Normal" => UnitStatus.Normal,
-                            "Attention" => UnitStatus.Attention,
-                            "Urgent" => UnitStatus.Urgent,
-                            "Vacant" => UnitStatus.Vacant,
-                            "Maintenance" => UnitStatus.Maintenance,
-                            _ => UnitStatus.Normal
-                        };
+                        // Houseinfo_data 테이블 컬럼 매핑: Location, RoomNumber, HousingType, ListingStatus, Remarks
+                        var location = item.TryGetProperty("Location", out var loc) ? loc.GetString() : "";
+                        var roomNumber = item.TryGetProperty("RoomNumber", out var room) && room.ValueKind == JsonValueKind.Number ? room.GetInt32() : 0;
+                        var housingType = item.TryGetProperty("HousingType", out var type) ? type.GetString() : "";
+                        var listingStatus = item.TryGetProperty("ListingStatus", out var listing) && listing.ValueKind == JsonValueKind.Number ? listing.GetInt32() == 1 : false;
+                        var remarks = item.TryGetProperty("Remarks", out var rem) ? rem.GetString() : "";
+                        var rentalArea = item.TryGetProperty("RentalArea", out var area) && area.ValueKind == JsonValueKind.Number ? area.GetDouble() : 0.0;
+
+                        Console.WriteLine($"Parsed - Location: {location}, Room: {roomNumber}, Type: {housingType}, Listing: {listingStatus}");
+
+                        // UnitName: "Location RoomNumber호" 형식으로 생성
+                        var unitName = $"{location} {roomNumber}호";
+
+                        // Status: ListingStatus가 true면 매물(Vacant), false면 입주중(Normal)
+                        var status = listingStatus ? UnitStatus.Vacant : UnitStatus.Normal;
+
+                        // Message: 비고 또는 주택유형 정보
+                        var message = !string.IsNullOrWhiteSpace(remarks) ? remarks : housingType;
 
                         if (string.IsNullOrWhiteSpace(unitName))
+                        {
+                            Console.WriteLine("Skipping item - unitName is empty");
                             continue;
+                        }
 
                         var vm = new UnitTileViewModel
                         {
-                            UnitName = unitName!,
+                            UnitName = unitName,
                             Message = message ?? string.Empty,
-                            Metric = metric,
+                            Metric = rentalArea,
                             Status = status
                         };
+
+                        Console.WriteLine($"Created UnitTileViewModel: {unitName}");
 
                         await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
                         {
                             Units.Add(vm);
+                            Console.WriteLine($"Added to Units collection. Total count: {Units.Count}");
                             var idx = unitName!.IndexOf(' ');
                             var groupName = idx > 0 ? unitName.Substring(0, idx) : "기타";
                             var group = Groups.FirstOrDefault(g => g.GroupName == groupName);
@@ -155,12 +176,24 @@ public partial class MainViewModel : ViewModelBase
                             group.Units.Add(vm);
                         });
                     }
+                    Console.WriteLine($"=== LoadUnitsAsync Completed - Total Units: {Units.Count}, Total Groups: {Groups.Count} ===");
+                }
+                else
+                {
+                    Console.WriteLine($"JSON is not an array. ValueKind: {el.ValueKind}");
                 }
             }
+            else
+            {
+                Console.WriteLine("JSON is null or not JsonElement");
+            }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // 조회 실패 시 샘플 데이터 유지 (무시)
+            Console.WriteLine($"=== LoadUnitsAsync Error ===");
+            Console.WriteLine($"Error: {ex.Message}");
+            Console.WriteLine($"StackTrace: {ex.StackTrace}");
+            Console.WriteLine("============================");
         }
     }
 
@@ -190,7 +223,7 @@ public partial class MainViewModel : ViewModelBase
         try
         {
             await DataGateway.Instance.ConnectIfNeededAsync().ConfigureAwait(false);
-            await DataGateway.Instance.ReadAsync("RentPayments").ConfigureAwait(false);
+            await DataGateway.Instance.ReadAsync("Bill_data").ConfigureAwait(false);
         }
         catch { /* ignore */ }
     }
@@ -205,7 +238,7 @@ public partial class MainViewModel : ViewModelBase
         try
         {
             await DataGateway.Instance.ConnectIfNeededAsync().ConfigureAwait(false);
-            await DataGateway.Instance.ReadAsync("UtilityBills").ConfigureAwait(false);
+            await DataGateway.Instance.ReadAsync("UtilUsage_data").ConfigureAwait(false);
         }
         catch { /* ignore */ }
     }
@@ -273,7 +306,7 @@ public partial class MainViewModel : ViewModelBase
                     metric = SelectedUnit.Metric,
                     status = SelectedUnit.Status.ToString()
                 };
-                await DataGateway.Instance.UpdateAsync("Units", data);
+                await DataGateway.Instance.UpdateAsync("Houseinfo_data", data);
             }
         }
         catch
