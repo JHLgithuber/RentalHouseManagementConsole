@@ -36,7 +36,7 @@ public partial class UnitTileViewModel : ObservableObject
     private string _phoneNumber = "010-1234-5678"; // 연락처
 
     [ObservableProperty]
-    private DateTime _moveInDate = DateTime.Now.AddMonths(-12); // 입주일
+    private DateTimeOffset _moveInDate = DateTimeOffset.Now.AddMonths(-12); // 입주일
 
     [ObservableProperty]
     private int _monthlyRent = 400000; // 월 임대료
