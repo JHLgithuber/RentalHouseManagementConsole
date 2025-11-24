@@ -334,12 +334,47 @@
             </Grid>
 
             <!-- 임대료 상세 목록 -->
-            <TextBlock Text="납부 내역" FontSize="20" FontWeight="Bold" Margin="0,0,0,12"/>
-            <Border Background="{DynamicResource ThemeControlMidBrush}" CornerRadius="8" Padding="16">
-              <StackPanel>
-                <TextBlock Text="개발 예정: 임대료 납부 내역 테이블" FontSize="16" HorizontalAlignment="Center" Margin="0,40"/>
-              </StackPanel>
-            </Border>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Margin="0,0,0,12">
+              <TextBlock Text="납부 내역" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+              <Button Content="➕ 신규 청구" Padding="12,6" Margin="16,0,0,0"
+                      Command="{Binding BillViewModel.ShowCreateCommand}"/>
+            </StackPanel>
+            
+            <ItemsControl ItemsSource="{Binding BillViewModel.Bills}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Border Background="{DynamicResource ThemeControlMidBrush}" CornerRadius="8" Padding="16" Margin="0,0,0,8">
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="Auto"/>
+                      </Grid.ColumnDefinitions>
+
+                      <TextBlock Grid.Column="0" Text="{Binding BillDate, StringFormat='{}{0:yyyy-MM-dd}'}" VerticalAlignment="Center" FontWeight="Bold"/>
+                      <TextBlock Grid.Column="1" Text="{Binding ContractId}" VerticalAlignment="Center" FontSize="11"/>
+                      <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Rent, StringFormat='임대료: ₩{0:N0}'}" FontSize="12"/>
+                        <TextBlock Text="{Binding ManagementFee, StringFormat='관리비: ₩{0:N0}'}" FontSize="12" Margin="0,2,0,0"/>
+                      </StackPanel>
+                      <TextBlock Grid.Column="3" Text="{Binding UnpaidAmount, StringFormat='미납: ₩{0:N0}'}" VerticalAlignment="Center" Foreground="#F57C00" FontWeight="Bold"/>
+                      <TextBlock Grid.Column="4" Text="{Binding PaidAmount, StringFormat='납입: ₩{0:N0}'}" VerticalAlignment="Center" Foreground="#2E7D32"/>
+                      <Border Grid.Column="5" Background="{Binding UnpaidAmount, Converter={StaticResource PaymentStatusConverter}}" CornerRadius="4" Padding="8,4" HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding UnpaidAmount, Converter={StaticResource PaymentStatusTextConverter}}" Foreground="White" FontSize="11"/>
+                      </Border>
+                      <StackPanel Grid.Column="6" Orientation="Horizontal" Spacing="4">
+                        <Button Content="상세" Padding="8,4" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).BillViewModel.ShowDetailCommand}" CommandParameter="{Binding}"/>
+                        <Button Content="수정" Padding="8,4" Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).BillViewModel.ShowEditCommand}" CommandParameter="{Binding}"/>
+                      </StackPanel>
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
           </StackPanel>
         </ScrollViewer>
       </Grid>
@@ -750,6 +785,67 @@
             <!-- 버튼 -->
             <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,20,0,0">
               <Button Content="닫기" Padding="16,8" Command="{Binding CloseDetailDialogCommand}"/>
+            </StackPanel>
+          </Grid>
+        </Border>
+      </Border>
+
+      <!-- 신규 세대 등록 다이얼로그 -->
+      <Border IsVisible="{Binding IsCreateDialogOpen}"
+              Background="#80000000"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch">
+        <Border Background="White"
+                Width="500"
+                CornerRadius="8"
+                Padding="24"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                BoxShadow="0 8 32 0 #60000000">
+          <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="*"/>
+              <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- 헤더 -->
+            <TextBlock Grid.Row="0" Text="신규 세대 등록" FontSize="20" FontWeight="Bold" Margin="0,0,0,20"/>
+
+            <!-- 내용 -->
+            <ScrollViewer Grid.Row="1" MaxHeight="400">
+              <StackPanel Spacing="12" DataContext="{Binding NewUnit}">
+                <TextBlock Text="세대번호 (필수)" FontWeight="Bold"/>
+                <TextBox Text="{Binding UnitId}" Watermark="예: 101동 101호"/>
+
+                <TextBlock Text="월 임대료 (원)" FontWeight="Bold" Margin="0,8,0,0"/>
+                <TextBox Text="{Binding MonthlyRent}" Watermark="400000"/>
+
+                <TextBlock Text="보증금 (원)" FontWeight="Bold" Margin="0,8,0,0"/>
+                <TextBox Text="{Binding Deposit}" Watermark="5000000"/>
+
+                <TextBlock Text="상태" FontWeight="Bold" Margin="0,8,0,0"/>
+                <ComboBox SelectedIndex="3">
+                  <ComboBoxItem Content="정상"/>
+                  <ComboBoxItem Content="주의"/>
+                  <ComboBoxItem Content="긴급"/>
+                  <ComboBoxItem Content="공실"/>
+                  <ComboBoxItem Content="수리 중"/>
+                </ComboBox>
+
+                <TextBlock Text="비고" FontWeight="Bold" Margin="0,8,0,0"/>
+                <TextBox Text="{Binding Notes}"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         Height="80"
+                         Watermark="특이사항 입력"/>
+              </StackPanel>
+            </ScrollViewer>
+
+            <!-- 버튼 -->
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,20,0,0">
+              <Button Content="취소" Padding="16,8" Command="{Binding CloseCreateDialogCommand}"/>
+              <Button Content="등록" Padding="16,8" Command="{Binding SaveCreateUnitCommand}"/>
             </StackPanel>
           </Grid>
         </Border>
