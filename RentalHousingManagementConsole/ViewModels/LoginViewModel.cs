@@ -8,6 +8,7 @@ namespace RentalHousingManagementConsole.ViewModels;
 public partial class LoginViewModel : ViewModelBase
 {
     private readonly IAuthenticationService _authService;
+    private readonly AuthService _authApi = AuthService.Instance;
 
     [ObservableProperty]
     private string _username = string.Empty;
@@ -45,18 +46,20 @@ public partial class LoginViewModel : ViewModelBase
 
         try
         {
-            // 시뮬레이션: 실제로는 서버나 로컬 DB에서 인증
-            await Task.Delay(500);
-
-            // 데모 목적: admin/admin으로 로그인
-            if (Username == "admin" && Password == "admin")
+            // 실제 백엔드 로그인 연동
+            var ok = await _authApi.LoginAsync(Username, Password).ConfigureAwait(false);
+            if (ok)
             {
                 OnLoginSuccess?.Invoke();
             }
             else
             {
-                ErrorMessage = "사용자명 또는 비밀번호가 올바르지 않습니다.";
+                ErrorMessage = _authApi.LastError ?? "로그인에 실패했습니다. 사용자명 또는 비밀번호를 확인하세요.";
             }
+        }
+        catch (System.Exception ex)
+        {
+            ErrorMessage = $"로그인 중 오류가 발생했습니다: {ex.Message}";
         }
         finally
         {

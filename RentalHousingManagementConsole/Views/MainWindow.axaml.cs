@@ -222,19 +222,33 @@ public partial class MainWindow : Window
 
     private void OnLoginSuccess()
     {
-        if (_loginVm is not null)
+        // 로그인 성공 이벤트는 백그라운드 스레드에서 호출될 수 있으므로
+        // UI 변경은 반드시 UI 스레드에서 수행한다.
+        void SwitchToMain()
         {
-            _loginVm.OnLoginSuccess -= OnLoginSuccess;
+            if (_loginVm is not null)
+            {
+                _loginVm.OnLoginSuccess -= OnLoginSuccess;
+            }
+
+            // MainView로 전환
+            var mainViewModel = new MainViewModel();
+            var mainView = new MainView
+            {
+                DataContext = mainViewModel
+            };
+
+            Content = mainView;
+            DataContext = mainViewModel;
         }
 
-        // MainView로 전환
-        var mainViewModel = new MainViewModel();
-        var mainView = new MainView
+        if (Dispatcher.UIThread.CheckAccess())
         {
-            DataContext = mainViewModel
-        };
-
-        Content = mainView;
-        DataContext = mainViewModel;
+            SwitchToMain();
+        }
+        else
+        {
+            Dispatcher.UIThread.Post(SwitchToMain);
+        }
     }
 }
