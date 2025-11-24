@@ -17,9 +17,6 @@ public enum UnitStatus
 public partial class UnitTileViewModel : ObservableObject
 {
     [ObservableProperty]
-    private string _unitId = string.Empty; // 백엔드 UnitId (PK)
-
-    [ObservableProperty]
     private string _unitName = string.Empty; // e.g., "101동 1203호" or "A-1203"
 
     [ObservableProperty]

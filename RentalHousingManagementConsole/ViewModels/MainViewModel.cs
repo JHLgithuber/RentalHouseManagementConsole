@@ -42,12 +42,6 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isEditDialogOpen;
 
-    [ObservableProperty]
-    private bool _isCreateDialogOpen;
-
-    [ObservableProperty]
-    private UnitTileViewModel? _newUnit;
-
     [RelayCommand]
     private void ToggleFullScreen()
     {
@@ -59,12 +53,6 @@ public partial class MainViewModel : ViewModelBase
 
     // Grouped view by building (e.g., "101동")
     public ObservableCollection<UnitGroupViewModel> Groups { get; } = new();
-
-    // ViewModels for other entities
-    public BillViewModel BillViewModel { get; } = new();
-    public ContractViewModel ContractViewModel { get; } = new();
-    public ResidentViewModel ResidentViewModel { get; } = new();
-    public VehicleViewModel VehicleViewModel { get; } = new();
 
     // 로딩 여부 플래그 (중복 로드 방지)
     private bool _unitsLoaded;
@@ -103,12 +91,14 @@ public partial class MainViewModel : ViewModelBase
         _unitsLoaded = true;
         try
         {
-            // 백엔드 엔터티: Houseinfo_data
-            var json = await DataGateway.Instance.ReadAsync("Houseinfo_data").ConfigureAwait(false);
+            // 엔터티 명은 백엔드 mgmt_class 설계에 따라 변경될 수 있음. 기본 값으로 "Units"를 시도.
+            var json = await DataGateway.Instance.ReadAsync("Units").ConfigureAwait(false);
             if (json is JsonElement el)
             {
+                // JSON_DATA가 배열이라고 가정하고 매핑 시도: { unitName, message, metric, status }
                 if (el.ValueKind == JsonValueKind.Array)
                 {
+                    // 백엔드에서 유효한 배열을 응답했다면(비어 있어도) 컬렉션을 비우고 실제 상태를 반영한다.
                     await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         Units.Clear();
@@ -118,46 +108,43 @@ public partial class MainViewModel : ViewModelBase
                     var list = el.EnumerateArray().ToList();
                     if (list.Count == 0)
                     {
+                        // 빈 DB: 컬렉션을 비운 상태로 유지
                         return;
                     }
 
                     foreach (var item in list)
                     {
-                        // Houseinfo_data 필드 매핑
-                        var unitId = item.TryGetProperty("UnitId", out var p1) ? p1.GetString() : null;
-                        var location = item.TryGetProperty("Location", out var p2) ? p2.GetString() : null;
-                        var roomNumber = item.TryGetProperty("RoomNumber", out var p3) && p3.ValueKind == JsonValueKind.Number ? (int?)p3.GetInt32() : null;
-                        var standardRent = item.TryGetProperty("StandardRent", out var p4) && p4.ValueKind == JsonValueKind.Number ? (int?)p4.GetInt32() : null;
-                        var standardDeposit = item.TryGetProperty("StandardDeposit", out var p5) && p5.ValueKind == JsonValueKind.Number ? (int?)p5.GetInt32() : null;
-                        var listingStatus = item.TryGetProperty("ListingStatus", out var p6) && p6.ValueKind == JsonValueKind.True;
-                        var remarks = item.TryGetProperty("Remarks", out var p7) ? p7.GetString() : null;
+                        var unitName = item.TryGetProperty("unitName", out var p1) ? p1.GetString() : null;
+                        unitName ??= item.TryGetProperty("UnitName", out var p1b) ? p1b.GetString() : null;
+                        var message = item.TryGetProperty("message", out var p2) ? p2.GetString() : null;
+                        var metric = item.TryGetProperty("metric", out var p3) && p3.ValueKind == JsonValueKind.Number ? p3.GetDouble() : (double?)null;
+                        var statusStr = item.TryGetProperty("status", out var p4) ? p4.GetString() : null;
 
-                        if (string.IsNullOrWhiteSpace(unitId))
+                        var status = statusStr switch
+                        {
+                            "Normal" => UnitStatus.Normal,
+                            "Attention" => UnitStatus.Attention,
+                            "Urgent" => UnitStatus.Urgent,
+                            "Vacant" => UnitStatus.Vacant,
+                            "Maintenance" => UnitStatus.Maintenance,
+                            _ => UnitStatus.Normal
+                        };
+
+                        if (string.IsNullOrWhiteSpace(unitName))
                             continue;
 
-                        // UnitId를 표시용 이름으로 사용 (예: "101동 101호")
-                        var unitName = unitId!;
-                        
-                        // 상태 결정 로직 (매물여부 기반)
-                        var status = listingStatus ? UnitStatus.Vacant : UnitStatus.Normal;
-                        
                         var vm = new UnitTileViewModel
                         {
-                            UnitId = unitId!,
-                            UnitName = unitName,
-                            Message = remarks ?? (listingStatus ? "매물" : "입주중"),
-                            Metric = standardRent,
-                            Status = status,
-                            MonthlyRent = standardRent ?? 0,
-                            Deposit = standardDeposit ?? 0,
-                            Notes = remarks ?? string.Empty
+                            UnitName = unitName!,
+                            Message = message ?? string.Empty,
+                            Metric = metric,
+                            Status = status
                         };
 
                         await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
                         {
                             Units.Add(vm);
-                            // 그룹명 추출 (예: "101동 101호" -> "101동")
-                            var idx = unitName.IndexOf(' ');
+                            var idx = unitName!.IndexOf(' ');
                             var groupName = idx > 0 ? unitName.Substring(0, idx) : "기타";
                             var group = Groups.FirstOrDefault(g => g.GroupName == groupName);
                             if (group is null)
@@ -171,9 +158,9 @@ public partial class MainViewModel : ViewModelBase
                 }
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"LoadUnitsAsync 실패: {ex.Message}");
+            // 조회 실패 시 샘플 데이터 유지 (무시)
         }
     }
 
@@ -197,12 +184,13 @@ public partial class MainViewModel : ViewModelBase
     {
         CurrentPage = PageType.RentPayment;
         IsPaneOpen = false;
+        // DB 연동 골격: 엔터티 이름은 백엔드와 합의 필요. 예시로 "RentPayments" 사용.
         if (_rentLoaded) return;
         _rentLoaded = true;
         try
         {
             await DataGateway.Instance.ConnectIfNeededAsync().ConfigureAwait(false);
-            await BillViewModel.LoadBillsAsync().ConfigureAwait(false);
+            await DataGateway.Instance.ReadAsync("RentPayments").ConfigureAwait(false);
         }
         catch { /* ignore */ }
     }
@@ -217,7 +205,7 @@ public partial class MainViewModel : ViewModelBase
         try
         {
             await DataGateway.Instance.ConnectIfNeededAsync().ConfigureAwait(false);
-            await BillViewModel.LoadBillsAsync().ConfigureAwait(false);
+            await DataGateway.Instance.ReadAsync("UtilityBills").ConfigureAwait(false);
         }
         catch { /* ignore */ }
     }
@@ -271,94 +259,30 @@ public partial class MainViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void ShowCreateUnit()
+    private async void SaveUnitEdit()
     {
-        NewUnit = new UnitTileViewModel
-        {
-            UnitId = string.Empty,
-            UnitName = string.Empty,
-            Status = UnitStatus.Vacant,
-            MonthlyRent = 0,
-            Deposit = 0,
-            Notes = string.Empty
-        };
-        IsCreateDialogOpen = true;
-    }
-
-    [RelayCommand]
-    private void CloseCreateDialog()
-    {
-        IsCreateDialogOpen = false;
-    }
-
-    [RelayCommand]
-    private async Task SaveUnitEdit()
-    {
+        // 간단 구현: 선택된 유닛의 상태/메시지를 서버에 업데이트 시도
         try
         {
             if (SelectedUnit is not null)
             {
-                // 백엔드 UPDATE 형식: data에 "SET 절", where에 조건
-                var setClause = $"StandardRent = {SelectedUnit.MonthlyRent}, " +
-                               $"StandardDeposit = {SelectedUnit.Deposit}, " +
-                               $"Remarks = '{SelectedUnit.Notes?.Replace("'", "''")}', " +
-                               $"ListingStatus = {(SelectedUnit.Status == UnitStatus.Vacant ? "1" : "0")}";
-                
-                var whereClause = $"UnitId = '{SelectedUnit.UnitId}'";
-                
-                await DataGateway.Instance.UpdateAsync(
-                    entity: "Houseinfo_data",
-                    data: setClause,
-                    where: whereClause
-                ).ConfigureAwait(false);
-                
-                // 성공 시 로컬 데이터도 업데이트
-                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                var data = new
                 {
-                    SelectedUnit.Message = SelectedUnit.Status == UnitStatus.Vacant ? "매물" : "입주중";
-                });
+                    unitName = SelectedUnit.UnitName,
+                    message = SelectedUnit.Message,
+                    metric = SelectedUnit.Metric,
+                    status = SelectedUnit.Status.ToString()
+                };
+                await DataGateway.Instance.UpdateAsync("Units", data);
             }
         }
-        catch (Exception ex)
+        catch
         {
-            System.Diagnostics.Debug.WriteLine($"SaveUnitEdit 실패: {ex.Message}");
+            // 실패는 일단 무시하고 UI 닫기
         }
         finally
         {
             IsEditDialogOpen = false;
-        }
-    }
-
-    [RelayCommand]
-    private async Task SaveCreateUnit()
-    {
-        try
-        {
-            if (NewUnit is not null && !string.IsNullOrWhiteSpace(NewUnit.UnitId))
-            {
-                // 백엔드 CREATE 형식: property에 컬럼명, data에 VALUES
-                var properties = "(UnitId, StandardRent, StandardDeposit, Remarks, ListingStatus)";
-                var values = $"('{NewUnit.UnitId}', {NewUnit.MonthlyRent}, {NewUnit.Deposit}, " +
-                            $"'{NewUnit.Notes?.Replace("'", "''")}', {(NewUnit.Status == UnitStatus.Vacant ? "1" : "0")})";
-                
-                await DataGateway.Instance.CreateAsync(
-                    entity: "Houseinfo_data",
-                    data: values,
-                    option: properties
-                ).ConfigureAwait(false);
-                
-                // 성공 시 리스트 새로고침
-                _unitsLoaded = false;
-                await LoadUnitsAsync().ConfigureAwait(false);
-            }
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"SaveCreateUnit 실패: {ex.Message}");
-        }
-        finally
-        {
-            IsCreateDialogOpen = false;
         }
     }
 }

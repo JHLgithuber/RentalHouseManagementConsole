@@ -25,4 +25,9 @@
         <PackageReference Include="CommunityToolkit.Mvvm"/>
         <PackageReference Include="SocketIOClient" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="Models\ContractData.cs" />
+      <Compile Remove="Models\HouseInfoData.cs" />
+    </ItemGroup>
 </Project>
