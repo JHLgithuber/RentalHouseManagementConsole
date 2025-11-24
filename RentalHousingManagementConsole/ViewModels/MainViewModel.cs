@@ -1,5 +1,9 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.Json;
+using System.Threading.Tasks;
+using RentalHousingManagementConsole.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -50,48 +54,113 @@ public partial class MainViewModel : ViewModelBase
     // Grouped view by building (e.g., "101동")
     public ObservableCollection<UnitGroupViewModel> Groups { get; } = new();
 
+    // 로딩 여부 플래그 (중복 로드 방지)
+    private bool _unitsLoaded;
+    private bool _rentLoaded;
+    private bool _utilitiesLoaded;
+    private bool _statisticsLoaded;
+
     public MainViewModel()
     {
-        // 초기 페이지: 대시보드
+        // 초기 페이지: 대시보드. 샘플 데이터는 완전히 제거한다.
         CurrentPage = PageType.Dashboard;
+    }
 
-        // Sample data for demonstration
-        var sample = new[]
+    /// <summary>
+    /// 로그인 직후 서버에서 초기 데이터를 가져온다. 실패 시 샘플 데이터 유지.
+    /// </summary>
+    public async Task InitializeAsync()
+    {
+        try
         {
-            new UnitTileViewModel { UnitName = "101동 101호", Message = "정상", Metric = 0, Status = UnitStatus.Normal },
-            new UnitTileViewModel { UnitName = "101동 102호", Message = "미납 1개월", Metric = 1, Status = UnitStatus.Attention },
-            new UnitTileViewModel { UnitName = "101동 103호", Message = "미납 3개월", Metric = 3, Status = UnitStatus.Urgent },
-            new UnitTileViewModel { UnitName = "101동 104호", Message = "공실", Metric = null, Status = UnitStatus.Vacant },
-            new UnitTileViewModel { UnitName = "101동 105호", Message = "수리 중", Metric = null, Status = UnitStatus.Maintenance },
-        };
+            // Socket.IO 연결 보장 및 유닛 데이터 조회 시도
+            await DataGateway.Instance.ConnectIfNeededAsync().ConfigureAwait(false);
 
-        // Create multiple buildings and units for grouping demo
-        // Buildings: 101동, 102동, 103동
-        for (int i = 0; i < 36; i++)
+            // 첫 진입 시 세대 데이터 로드
+            await LoadUnitsAsync().ConfigureAwait(false);
+        }
+        catch (Exception)
         {
-            var item = sample[i % sample.Length];
-            var dongNumber = 101 + (i / 12); // 12 units per building
-            var unitNumber = 101 + (i % 12);
+            // 조회 실패 시 아무 것도 표시하지 않음 (샘플 데이터 없음)
+        }
+    }
 
-            var vm = new UnitTileViewModel
+    private async Task LoadUnitsAsync()
+    {
+        if (_unitsLoaded) return;
+        _unitsLoaded = true;
+        try
+        {
+            // 엔터티 명은 백엔드 mgmt_class 설계에 따라 변경될 수 있음. 기본 값으로 "Units"를 시도.
+            var json = await DataGateway.Instance.ReadAsync("Units").ConfigureAwait(false);
+            if (json is JsonElement el)
             {
-                UnitName = $"{dongNumber}동 {unitNumber}호",
-                Message = item.Message,
-                Metric = item.Metric.HasValue ? (double?)(item.Metric.Value + (i % 2)) : null,
-                Status = item.Status
-            };
+                // JSON_DATA가 배열이라고 가정하고 매핑 시도: { unitName, message, metric, status }
+                if (el.ValueKind == JsonValueKind.Array)
+                {
+                    // 백엔드에서 유효한 배열을 응답했다면(비어 있어도) 컬렉션을 비우고 실제 상태를 반영한다.
+                    await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        Units.Clear();
+                        Groups.Clear();
+                    });
 
-            Units.Add(vm);
+                    var list = el.EnumerateArray().ToList();
+                    if (list.Count == 0)
+                    {
+                        // 빈 DB: 컬렉션을 비운 상태로 유지
+                        return;
+                    }
 
-            // Group by dong (e.g., "101동")
-            var groupName = $"{dongNumber}동";
-            var group = Groups.FirstOrDefault(g => g.GroupName == groupName);
-            if (group is null)
-            {
-                group = new UnitGroupViewModel { GroupName = groupName };
-                Groups.Add(group);
+                    foreach (var item in list)
+                    {
+                        var unitName = item.TryGetProperty("unitName", out var p1) ? p1.GetString() : null;
+                        unitName ??= item.TryGetProperty("UnitName", out var p1b) ? p1b.GetString() : null;
+                        var message = item.TryGetProperty("message", out var p2) ? p2.GetString() : null;
+                        var metric = item.TryGetProperty("metric", out var p3) && p3.ValueKind == JsonValueKind.Number ? p3.GetDouble() : (double?)null;
+                        var statusStr = item.TryGetProperty("status", out var p4) ? p4.GetString() : null;
+
+                        var status = statusStr switch
+                        {
+                            "Normal" => UnitStatus.Normal,
+                            "Attention" => UnitStatus.Attention,
+                            "Urgent" => UnitStatus.Urgent,
+                            "Vacant" => UnitStatus.Vacant,
+                            "Maintenance" => UnitStatus.Maintenance,
+                            _ => UnitStatus.Normal
+                        };
+
+                        if (string.IsNullOrWhiteSpace(unitName))
+                            continue;
+
+                        var vm = new UnitTileViewModel
+                        {
+                            UnitName = unitName!,
+                            Message = message ?? string.Empty,
+                            Metric = metric,
+                            Status = status
+                        };
+
+                        await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            Units.Add(vm);
+                            var idx = unitName!.IndexOf(' ');
+                            var groupName = idx > 0 ? unitName.Substring(0, idx) : "기타";
+                            var group = Groups.FirstOrDefault(g => g.GroupName == groupName);
+                            if (group is null)
+                            {
+                                group = new UnitGroupViewModel { GroupName = groupName };
+                                Groups.Add(group);
+                            }
+                            group.Units.Add(vm);
+                        });
+                    }
+                }
             }
-            group.Units.Add(vm);
+        }
+        catch (Exception)
+        {
+            // 조회 실패 시 샘플 데이터 유지 (무시)
         }
     }
 
@@ -103,31 +172,57 @@ public partial class MainViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void OpenUnitManagement()
+    private async Task OpenUnitManagement()
     {
         CurrentPage = PageType.UnitManagement;
         IsPaneOpen = false;
+        try { await LoadUnitsAsync().ConfigureAwait(false); } catch { /* ignore */ }
     }
 
     [RelayCommand]
-    private void OpenRentPayment()
+    private async Task OpenRentPayment()
     {
         CurrentPage = PageType.RentPayment;
         IsPaneOpen = false;
+        // DB 연동 골격: 엔터티 이름은 백엔드와 합의 필요. 예시로 "RentPayments" 사용.
+        if (_rentLoaded) return;
+        _rentLoaded = true;
+        try
+        {
+            await DataGateway.Instance.ConnectIfNeededAsync().ConfigureAwait(false);
+            await DataGateway.Instance.ReadAsync("RentPayments").ConfigureAwait(false);
+        }
+        catch { /* ignore */ }
     }
 
     [RelayCommand]
-    private void OpenUtilityBills()
+    private async Task OpenUtilityBills()
     {
         CurrentPage = PageType.UtilityBills;
         IsPaneOpen = false;
+        if (_utilitiesLoaded) return;
+        _utilitiesLoaded = true;
+        try
+        {
+            await DataGateway.Instance.ConnectIfNeededAsync().ConfigureAwait(false);
+            await DataGateway.Instance.ReadAsync("UtilityBills").ConfigureAwait(false);
+        }
+        catch { /* ignore */ }
     }
 
     [RelayCommand]
-    private void OpenStatistics()
+    private async Task OpenStatistics()
     {
         CurrentPage = PageType.Statistics;
         IsPaneOpen = false;
+        if (_statisticsLoaded) return;
+        _statisticsLoaded = true;
+        try
+        {
+            await DataGateway.Instance.ConnectIfNeededAsync().ConfigureAwait(false);
+            await DataGateway.Instance.ReadAsync("Statistics").ConfigureAwait(false);
+        }
+        catch { /* ignore */ }
     }
 
     [RelayCommand]
@@ -164,9 +259,30 @@ public partial class MainViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void SaveUnitEdit()
+    private async void SaveUnitEdit()
     {
-        // 저장 로직 (추후 구현)
-        IsEditDialogOpen = false;
+        // 간단 구현: 선택된 유닛의 상태/메시지를 서버에 업데이트 시도
+        try
+        {
+            if (SelectedUnit is not null)
+            {
+                var data = new
+                {
+                    unitName = SelectedUnit.UnitName,
+                    message = SelectedUnit.Message,
+                    metric = SelectedUnit.Metric,
+                    status = SelectedUnit.Status.ToString()
+                };
+                await DataGateway.Instance.UpdateAsync("Units", data);
+            }
+        }
+        catch
+        {
+            // 실패는 일단 무시하고 UI 닫기
+        }
+        finally
+        {
+            IsEditDialogOpen = false;
+        }
     }
 }

@@ -224,7 +224,7 @@ public partial class MainWindow : Window
     {
         // 로그인 성공 이벤트는 백그라운드 스레드에서 호출될 수 있으므로
         // UI 변경은 반드시 UI 스레드에서 수행한다.
-        void SwitchToMain()
+        async void SwitchToMain()
         {
             if (_loginVm is not null)
             {
@@ -240,6 +240,16 @@ public partial class MainWindow : Window
 
             Content = mainView;
             DataContext = mainViewModel;
+
+            // 로그인 직후 서버 데이터 초기화 시도 (비차단 실행)
+            try
+            {
+                await mainViewModel.InitializeAsync();
+            }
+            catch
+            {
+                // TODO: 필요 시 사용자에게 알림 표시
+            }
         }
 
         if (Dispatcher.UIThread.CheckAccess())

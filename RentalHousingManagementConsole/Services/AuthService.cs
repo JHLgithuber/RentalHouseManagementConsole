@@ -54,6 +54,8 @@ public sealed class AuthService
             RefreshToken = dto.refresh_token;
             Permission = dto.permission;
             _api.SetBearer(AccessToken);
+            // Socket.IO 게이트웨이에도 토큰 전달
+            try { DataGateway.Instance.SetAccessToken(AccessToken); } catch { /* ignore */ }
             return true;
         }
         catch (HttpRequestException ex)
@@ -105,6 +107,7 @@ public sealed class AuthService
 
             AccessToken = dto.access_token;
             _api.SetBearer(AccessToken);
+            try { DataGateway.Instance.SetAccessToken(AccessToken); } catch { /* ignore */ }
             return true;
         }
         catch (HttpRequestException ex)
